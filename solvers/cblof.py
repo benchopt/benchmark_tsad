@@ -4,7 +4,6 @@ from benchopt import BaseSolver
 from benchopt import safe_import_context
 
 with safe_import_context() as import_ctx:
-    import numpy as np
     from pyod.models.cblof import CBLOF
 
 

@@ -4,7 +4,6 @@ from benchopt import BaseSolver
 from benchopt import safe_import_context
 
 with safe_import_context() as import_ctx:
-    import numpy as np
     from pyod.models.abod import ABOD
 
 
@@ -23,7 +22,10 @@ class Solver(BaseSolver):
         self.X, self.y = X, y
 
     def run(self, _):
-        clf = ABOD(n_neighbors=self.n_neighbors, contamination=self.contamination)
+        clf = ABOD(
+            n_neighbors=self.n_neighbors,
+            contamination=self.contamination,
+        )
         clf.fit(self.X)
         self.y_hat = clf.predict(self.X)
 

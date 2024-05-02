@@ -2,7 +2,6 @@ from benchopt import BaseObjective, safe_import_context
 
 with safe_import_context() as import_ctx:
     import numpy as np
-    from sklearn.ensemble import IsolationForest
 
 
 class Objective(BaseObjective):
