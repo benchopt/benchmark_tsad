@@ -22,7 +22,7 @@ class Solver(BaseSolver):
     def set_objective(self, X, y):
         self.X, self.y = X, y
 
-    def run(self, NONE):
+    def run(self, _):
         clf = LocalOutlierFactor(
             novelty=True,
             n_neighbors=self.n_neighbors,

@@ -22,7 +22,7 @@ class Solver(BaseSolver):
     def set_objective(self, X, y):
         self.X, self.y = X, y
 
-    def run(self, NONE):
+    def run(self, _):
         clf = ABOD(n_neighbors=self.n_neighbors, contamination=self.contamination)
         clf.fit(self.X)
         self.y_hat = clf.predict(self.X)
