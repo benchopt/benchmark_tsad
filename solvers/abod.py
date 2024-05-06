@@ -18,6 +18,8 @@ class Solver(BaseSolver):
         "n_neighbors": [10, 20, 30, 40],
     }
 
+    sampling_strategy = "run_once"
+
     def set_objective(self, X, y):
         self.X, self.y = X, y
 

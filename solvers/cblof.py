@@ -17,6 +17,8 @@ class Solver(BaseSolver):
         "contamination": [5e-4, 0.01, 0.02, 0.03, 0.04],
     }
 
+    sampling_strategy = "run_once"
+
     def set_objective(self, X, y):
         self.X, self.y = X, y
 

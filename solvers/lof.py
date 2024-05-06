@@ -18,6 +18,8 @@ class Solver(BaseSolver):
         "n_neighbors": [5, 10, 20, 25, 40],
     }
 
+    sampling_strategy = "run_once"
+
     def set_objective(self, X, y):
         self.X, self.y = X, y
 
@@ -30,8 +32,8 @@ class Solver(BaseSolver):
         clf.fit(self.X)
         self.y_hat = clf.predict(self.X)
 
+    def get_result(self):
         self.y_hat[self.y_hat == 1] = 0
         self.y_hat[self.y_hat == -1] = 1
 
-    def get_result(self):
         return {"y_hat": self.y_hat}
