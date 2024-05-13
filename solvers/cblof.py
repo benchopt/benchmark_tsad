@@ -10,7 +10,7 @@ with safe_import_context() as import_ctx:
 class Solver(BaseSolver):
     name = "CBLOF"
 
-    install_cmd = "pip"
+    install_cmd = "conda"
     requirements = ["pyod"]
 
     parameters = {
