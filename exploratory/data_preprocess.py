@@ -175,7 +175,7 @@ if __name__ == "__main__":
         for d in commands:
             if d in datasets:
                 load_data(d)
-                tmp = get_data(d)
+                # tmp = get_data(d)
     else:
         print(
             """
