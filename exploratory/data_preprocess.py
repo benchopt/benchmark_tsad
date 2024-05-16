@@ -153,6 +153,9 @@ if __name__ == "__main__":
     args = sys.argv[1:]
     if args[0] == "download":
         commands = [
+            "git clone https://github.com/NetManAIOps/OmniAnomaly.git",
+            "mv OmniAnomaly/ServerMachineDataset .",
+            "rm -rf OmniAnomaly",
             "wget https://s3-us-west-2.amazonaws.com/telemanom/data.zip",
             "unzip data.zip",
             "rm data.zip",
@@ -162,7 +165,11 @@ if __name__ == "__main__":
         for command in commands:
             subprocess.run(command, shell=True)
 
+    # Adds the option to process all datasets at once
     commands = sys.argv[1:]
+    if "ALL" in commands:
+        commands = datasets
+
     load = []
     if len(commands) > 0:
         for d in commands:
@@ -173,6 +180,6 @@ if __name__ == "__main__":
         print(
             """
         Usage: python data_preprocess.py <datasets>
-        where <datasets> should be one of ['SMD', 'SMAP', 'MSL']
+        where <datasets> should be one of ['SMD', 'SMAP', 'MSL', 'ALL']
         """
         )
