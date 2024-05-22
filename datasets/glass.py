@@ -12,4 +12,4 @@ class Dataset(BaseDataset):
     def get_data(self):
         data = np.load("datasets/14_glass.npz")
         X, y = data["X"], data["y"]
-        return dict(X=X, y=y)
+        return dict(X=X, y=y, X_test=None)

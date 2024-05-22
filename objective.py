@@ -14,9 +14,10 @@ class Objective(BaseObjective):
         """
         return np.zeros(self.X.shape[0])
 
-    def set_data(self, X, y):
+    def set_data(self, X, y, X_test):
         "Set the data to compute the objective."
         self.X, self.y = X, y
+        self.X_test = X_test
 
     def evaluate_result(self, y_hat):
         "Evaluate the result provided by the solver."
