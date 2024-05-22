@@ -9,6 +9,9 @@ with safe_import_context() as import_ctx:
 class Dataset(BaseDataset):
     name = "Simulated"
 
+    install_cmd = "conda"
+    requirements = ["scikit-learn"]
+
     n_samples = 1000
     n_features = 5
     noise = 0.1
@@ -27,9 +30,6 @@ class Dataset(BaseDataset):
         for i in range(self.n_anomaly):
             idx = np.random.randint(self.n_samples)
             y[idx] = 1
-
-        print(x1.shape)
-        print(np.random.randint(0, 2, self.n_features).shape)
 
         x1 = (
             x1
