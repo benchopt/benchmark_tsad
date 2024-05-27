@@ -1,9 +1,8 @@
-from benchopt import BaseDataset
-from benchopt import safe_import_context
+from benchopt import BaseDataset, safe_import_context
 
 with safe_import_context() as import_ctx:
     import os
-    import pandas as pd
+    import numpy as np
 
 
 class Dataset(BaseDataset):
@@ -14,11 +13,23 @@ class Dataset(BaseDataset):
 
     def get_data(self):
 
-        path = "/storage/store/work/jyehya/Benchmarks/processing/processed/SMAP"
-        dataset = "SMAP"
+        # Check if the data is already here
+        if not os.path.exists("data/SMAP/SMAP_train.npy"):
+            os.makedirs("data/SMAP", exist_ok=True)
+            os.system(
+                """
+                wget -O data/SMAP/SMAP_train.npy "https://drive.google.com/uc?&id=1e_JhpIURDLluw4IcHJF-dgtjjJXsPEKE&export=download"
+                wget -O data/SMAP/SMAP_test.npy "https://drive.google.com/uc?&id=10-r-Zm0nfQJp0i-mVg3iXs6x0u9Ua25a&export=download"
+                wget -O data/SMAP/SMAP_test_label.npy "https://drive.google.com/uc?&id=1uYiXqmK3Cgyxk4U6-LgUni7JddQnlggs&export=download"
+            """  # noqa
+            )
 
-        X_train = pd.read_pickle(os.path.join(path, dataset + "_train.pkl"))
-        X_test = pd.read_pickle(os.path.join(path, dataset + "_test.pkl"))
-        y_test = pd.read_pickle(os.path.join(path, dataset + "_test_label.pkl"))
+        X_train = np.load("data/SMAP/SMAP_train.npy")
+        X_test = np.load("data/SMAP/SMAP_test.npy")
+        y_test = np.load("data/SMAP/SMAP_test_label.npy")
 
-        return dict(X=X_train, y=y_test, X_test=X_test)
+        print(X_train.shape, X_test.shape, y_test.shape)
+
+        return dict(
+            X=X_train, y=y_test, X_test=X_test
+        )
