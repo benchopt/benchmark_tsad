@@ -48,6 +48,18 @@ class Dataset(BaseDataset):
 
         print(X_train.shape, X_test.shape, y_test.shape)
 
+        X_train = np.lib.stride_tricks.sliding_window_view(
+            X_train, window_shape=self.window_size, axis=0
+        )[::self.stride]
+
+        X_test = np.lib.stride_tricks.sliding_window_view(
+            X_test, window_shape=self.window_size, axis=0
+        )[::self.stride]
+
+        y_test = np.lib.stride_tricks.sliding_window_view(
+            y_test, window_shape=self.window_size, axis=0
+        )[::self.stride]
+
         return dict(
             X=X_train, y=y_test, X_test=X_test
         )
