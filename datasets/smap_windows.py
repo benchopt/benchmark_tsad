@@ -7,7 +7,7 @@ with safe_import_context() as import_ctx:
 
 
 class Dataset(BaseDataset):
-    name = "SMAP"
+    name = "WSMAP"
 
     install_cmd = "conda"
     requirements = ["pandas", "requests"]

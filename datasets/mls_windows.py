@@ -7,7 +7,7 @@ with safe_import_context() as import_ctx:
 
 
 class Dataset(BaseDataset):
-    name = "MSL"
+    name = "WMSL"
 
     install_cmd = "conda"
     requirements = ["pandas", "requests"]
