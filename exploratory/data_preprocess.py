@@ -29,7 +29,8 @@ def load_and_save(
     )
     print(dataset, category, filename, temp.shape)
     with open(
-        os.path.join(output_folder, dataset_name, dataset + "_" + category + ".pkl"),
+        os.path.join(output_folder, dataset_name,
+                     dataset + "_" + category + ".pkl"),
         "wb",
     ) as file:
         dump(temp, file)
@@ -69,26 +70,31 @@ def load_data(dataset_name):
                 )
     elif dataset_name == "SMAP" or dataset_name == "MSL":
         dataset_folder = "data"
-        with open(os.path.join(dataset_folder, "labeled_anomalies.csv"), "r") as file:
+        with open(os.path.join(dataset_folder,
+                               "labeled_anomalies.csv",
+                               ), "r") as file:
             csv_reader = csv.reader(file, delimiter=",")
             res = [row for row in csv_reader][1:]
         res = sorted(res, key=lambda k: k[0])
         label_folder = os.path.join(dataset_folder, "test_label")
         makedirs(label_folder, exist_ok=True)
-        data_info = [row for row in res if row[1] == dataset_name and row[0] != "P-2"]
+        data_info = [row for row in res if row[1]
+                     == dataset_name and row[0] != "P-2"]
         labels = []
         for row in data_info:
             anomalies = ast.literal_eval(row[2])
             length = int(row[-1])
             label = np.zeros([length], dtype=bool)
             for anomaly in anomalies:
-                label[anomaly[0] : anomaly[1] + 1] = True
+                label[anomaly[0]: anomaly[1] + 1] = True
             labels.extend(label)
         labels = np.asarray(labels)
         print(dataset_name, "test_label", labels.shape)
         with open(
             os.path.join(
-                output_folder, dataset_name, dataset_name + "_" + "test_label" + ".pkl"
+                output_folder,
+                dataset_name,
+                dataset_name + "_" + "test_label" + ".pkl",
             ),
             "wb",
         ) as file:
@@ -106,7 +112,9 @@ def load_data(dataset_name):
             print(dataset_name, category, data.shape)
             with open(
                 os.path.join(
-                    output_folder, dataset_name, dataset_name + "_" + category + ".pkl"
+                    output_folder,
+                    dataset_name,
+                    dataset_name + "_" + category + ".pkl",
                 ),
                 "wb",
             ) as file:
@@ -124,17 +132,20 @@ def get_data(dataset_name):
     """
     print("Loading data for", dataset_name)
     with open(
-        os.path.join(output_folder, dataset_name, dataset_name + "_train.pkl"), "rb"
+        os.path.join(output_folder, dataset_name,
+                     dataset_name + "_train.pkl"), "rb"
     ) as f:
         train_data = pkl_load(f)
 
     with open(
-        os.path.join(output_folder, dataset_name, dataset_name + "_test.pkl"), "rb"
+        os.path.join(output_folder, dataset_name,
+                     dataset_name + "_test.pkl"), "rb"
     ) as f:
         test_data = pkl_load(f)
 
     with open(
-        os.path.join(output_folder, dataset_name, dataset_name + "_test_label.pkl"),
+        os.path.join(output_folder, dataset_name,
+                     dataset_name + "_test_label.pkl"),
         "rb",
     ) as f:
         test_label = pkl_load(f)
@@ -159,7 +170,7 @@ if __name__ == "__main__":
             "wget https://s3-us-west-2.amazonaws.com/telemanom/data.zip",
             "unzip data.zip",
             "rm data.zip",
-            "cd data && wget https://raw.githubusercontent.com/khundman/telemanom/master/labeled_anomalies.csv",
+            "cd data && wget https://raw.githubusercontent.com/khundman/telemanom/master/labeled_anomalies.csv",  # noqa
         ]
 
         for command in commands:
