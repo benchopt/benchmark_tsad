@@ -28,8 +28,6 @@ class Solver(BaseSolver):
 
     def run(self, _):
         clf = DIF(contamination=self.contamination, device="cuda")
-        # clf.fit(self.X)
-        # self.y_hat = clf.predict(self.X_test)
 
         if self.window:
             # We need to transform the data to have a rolling window
@@ -53,6 +51,9 @@ class Solver(BaseSolver):
                 # Decision function : Larger scores are outliers
                 raw_anomaly_score.append(
                     clf.decision_function(self.X_test[i]))
+
+            self.raw_y_hat = np.array(raw_y_hat)
+            self.raw_anomaly_score = np.array(raw_anomaly_score)
 
     def skip(self, X_train, X_test, y_test):
         # If cuda is not available, we skip the test because deep method

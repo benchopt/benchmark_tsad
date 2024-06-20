@@ -34,8 +34,6 @@ class Solver(BaseSolver):
             n_neighbors=self.n_neighbors,
             contamination=self.contamination,
         )
-        # clf.fit(self.X)
-        # self.y_hat = clf.predict(self.X)
 
         if self.window:
             # We need to transform the data to have a rolling window
