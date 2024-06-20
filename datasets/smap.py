@@ -46,6 +46,11 @@ class Dataset(BaseDataset):
         X_test = np.load("data/SMAP/SMAP_test.npy")
         y_test = np.load("data/SMAP/SMAP_test_label.npy")
 
+        # Limiting the size of the dataset for testing purposes
+        X_train = X_train[:100]
+        X_test = X_test[:100]
+        y_test = y_test[:100]
+
         return dict(
             X=X_train, y=y_test, X_test=X_test
         )

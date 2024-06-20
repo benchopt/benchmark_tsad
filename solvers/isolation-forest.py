@@ -49,7 +49,7 @@ class Solver(BaseSolver):
             for i in range(len(self.X_test)):
                 clf.fit(self.X_test[i])
                 raw_y_hat.append(clf.predict(self.X_test[i]))
-                raw_anomaly_score.append(clf.decision_function(self.X_test[i]))
+                raw_anomaly_score.append(-clf.score_samples(self.X_test[i]))
 
             self.raw_y_hat = np.array(raw_y_hat)
             self.raw_anomaly_score = np.array(raw_anomaly_score)
