@@ -57,6 +57,7 @@ class Solver(BaseSolver):
                 clf.fit(self.X_test[i])
                 raw_y_hat.append(clf.predict(self.X_test[i]))
                 # Decision function : Negative scores are outliers
+                # We take the opposite to have larger scores as outliers
                 raw_anomaly_score.append(
                     -clf.decision_function(self.X_test[i]))
 
