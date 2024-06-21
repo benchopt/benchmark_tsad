@@ -8,6 +8,7 @@ with safe_import_context() as import_ctx:
 class Objective(BaseObjective):
     name = "Anomaly detection"
 
+    install_cmd = "conda"
     requirements = ["scikit-learn"]
 
     def get_one_result(self):
