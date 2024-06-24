@@ -11,7 +11,7 @@ class Dataset(BaseDataset):
     install_cmd = "conda"
     requirements = ["scikit-learn"]
 
-    n_samples = 1000
+    n_samples = 100
     n_features = 5
     noise = 0.1
     n_anomaly = 90

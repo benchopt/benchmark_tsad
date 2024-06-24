@@ -39,17 +39,20 @@ class Solver(BaseSolver):
 
         if self.window:
             # We need to transform the data to have a rolling window
-            self.X_train = np.lib.stride_tricks.sliding_window_view(
-                self.X_train, window_shape=self.window_size, axis=0
-            )[::self.stride].transpose(0, 2, 1)
+            if self.X_train is not None:
+                self.X_train = np.lib.stride_tricks.sliding_window_view(
+                    self.X_train, window_shape=self.window_size, axis=0
+                )[::self.stride].transpose(0, 2, 1)
 
-            self.X_test = np.lib.stride_tricks.sliding_window_view(
-                self.X_test, window_shape=self.window_size, axis=0
-            )[::self.stride].transpose(0, 2, 1)
+            if self.X_test is not None:
+                self.X_test = np.lib.stride_tricks.sliding_window_view(
+                    self.X_test, window_shape=self.window_size, axis=0
+                )[::self.stride].transpose(0, 2, 1)
 
-            self.y_test = np.lib.stride_tricks.sliding_window_view(
-                self.y_test, window_shape=self.window_size, axis=0
-            )[::self.stride]
+            if self.y_test is not None:
+                self.y_test = np.lib.stride_tricks.sliding_window_view(
+                    self.y_test, window_shape=self.window_size, axis=0
+                )[::self.stride]
 
             raw_y_hat = []
             raw_anomaly_score = []
