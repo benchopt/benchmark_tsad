@@ -2,7 +2,9 @@ from benchopt import BaseObjective, safe_import_context
 
 with safe_import_context() as import_ctx:
     import numpy as np
-    from sklearn.metrics import precision_score, recall_score, f1_score
+    from sklearn.metrics import (
+        precision_score, recall_score, f1_score, zero_one_loss
+        )
 
 
 class Objective(BaseObjective):
@@ -48,7 +50,8 @@ class Objective(BaseObjective):
         return f1_score(self.y_test, y_hat, zero_division=0)
 
     def get_zoloss(self, y_hat):
-        return np.sum(y_hat != self.y_test) / len(self.y_test)
+        # return np.sum(y_hat != self.y_test) / len(self.y_test)
+        return zero_one_loss(self.y_test, y_hat)
 
     def get_objective(self):
         return dict(
