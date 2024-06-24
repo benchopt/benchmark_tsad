@@ -12,7 +12,7 @@ class Solver(BaseSolver):
     name = "ABOD"
 
     install_cmd = "conda"
-    requirements = ["pyod"]
+    requirements = ["pip:pyod"]
 
     parameters = {
         "contamination": [5e-4, 0.1, 0.2, 0.3],

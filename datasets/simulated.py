@@ -38,4 +38,4 @@ class Dataset(BaseDataset):
         )
 
         X = x1
-        return dict(X=X, y=y)
+        return dict(X_train=None, y_test=y, X_test=X)
