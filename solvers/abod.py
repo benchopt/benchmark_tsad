@@ -27,16 +27,13 @@ class Solver(BaseSolver):
     def set_objective(self, X_train, y_test, X_test):
         self.X_train = X_train
         self.X_test, self.y_test = X_test, y_test
-
-    def run(self, _):
-        clf = ABOD(
+        self.clf = ABOD(
             n_neighbors=self.n_neighbors,
             contamination=self.contamination,
             method="fast"
         )
-        # clf.fit(self.X)
-        # self.y_hat = clf.predict(self.X)
 
+    def run(self, _):
         if self.window:
             # We need to transform the data to have a rolling window
             if self.X_train is not None:
@@ -57,11 +54,11 @@ class Solver(BaseSolver):
             raw_y_hat = []
             raw_anomaly_score = []
             for i in range(len(self.X_test)):
-                clf.fit(self.X_test[i])
-                raw_y_hat.append(clf.predict(self.X_test[i]))
+                self.clf.fit(self.X_test[i])
+                raw_y_hat.append(self.clf.predict(self.X_test[i]))
                 # Decision function : Larger scores are outliers
                 raw_anomaly_score.append(
-                    clf.decision_function(self.X_test[i]))
+                    self.clf.decision_function(self.X_test[i]))
 
             self.raw_y_hat = np.array(raw_y_hat)
             self.raw_anomaly_score = np.array(raw_anomaly_score)
