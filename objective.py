@@ -27,10 +27,10 @@ class Objective(BaseObjective):
 
     def evaluate_result(self, y_hat):
         "Evaluate the result provided by the solver."
-        precision = self.get_precision(y_hat)
-        recall = self.get_recall(y_hat)
-        f1 = self.get_f1(y_hat)
-        zoloss = self.get_zoloss(y_hat)
+        precision = precision_score(self.y_test, y_hat, zero_division=0)
+        recall = recall_score(self.y_test, y_hat, zero_division=0)
+        f1 = f1_score(self.y_test, y_hat, zero_division=0)
+        zoloss = zero_one_loss(self.y_test, y_hat)
 
         return dict(
             value=zoloss,  # having zoloss twice because of the API
@@ -39,19 +39,6 @@ class Objective(BaseObjective):
             recall=recall,
             f1=f1,
         )
-
-    def get_precision(self, y_hat):
-        return precision_score(self.y_test, y_hat, zero_division=0)
-
-    def get_recall(self, y_hat):
-        return recall_score(self.y_test, y_hat, zero_division=0)
-
-    def get_f1(self, y_hat):
-        return f1_score(self.y_test, y_hat, zero_division=0)
-
-    def get_zoloss(self, y_hat):
-        # return np.sum(y_hat != self.y_test) / len(self.y_test)
-        return zero_one_loss(self.y_test, y_hat)
 
     def get_objective(self):
         return dict(

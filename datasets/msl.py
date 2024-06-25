@@ -5,6 +5,22 @@ with safe_import_context() as import_ctx:
     import numpy as np
     import requests
 
+# Create global variables to store the urls
+url_xtrain = (
+    "https://drive.google.com/uc?&id="
+    "1PMzjODVFblVnwq8xo7pKHrdbczPxdqTa&export=download"
+)
+
+url_xtest = (
+    "https://drive.google.com/uc?&id="
+    "1OcNc0YQsOMw9jQIIHgiOXVG03wjXbEiM&export=download"
+)
+
+url_ytest = (
+    "https://drive.google.com/uc?&id="
+    "19vR0QvKluuiIT2H5mCFNIJh6xGVwshDd&export=download"
+)
+
 
 class Dataset(BaseDataset):
     name = "MSL"
@@ -12,23 +28,16 @@ class Dataset(BaseDataset):
     install_cmd = "conda"
     requirements = ["pandas", "requests"]
 
+    parameters = {
+        "debug": [True],
+    }
+
     def get_data(self):
+        # Adding get_data_path method soon
 
         # Check if the data is already here
         if not os.path.exists("data/MSL/MSL_train.npy"):
             os.makedirs("data/MSL", exist_ok=True)
-            url_xtrain = (
-                "https://drive.google.com/uc?&id="
-                "1PMzjODVFblVnwq8xo7pKHrdbczPxdqTa&export=download"
-            )
-            url_xtest = (
-                "https://drive.google.com/uc?&id="
-                "1OcNc0YQsOMw9jQIIHgiOXVG03wjXbEiM&export=download"
-            )
-            url_ytest = (
-                "https://drive.google.com/uc?&id="
-                "19vR0QvKluuiIT2H5mCFNIJh6xGVwshDd&export=download"
-            )
 
             response = requests.get(url_xtrain)
             with open("data/MSL/MSL_train.npy", "wb") as f:
@@ -47,9 +56,10 @@ class Dataset(BaseDataset):
         y_test = np.load("data/MSL/MSL_test_label.npy")
 
         # Limiting the size of the dataset for testing purposes
-        X_train = X_train[:100]
-        X_test = X_test[:100]
-        y_test = y_test[:100]
+        if self.debug:
+            X_train = X_train[:100]
+            X_test = X_test[:100]
+            y_test = y_test[:100]
 
         print(X_train.shape, X_test.shape, y_test.shape)
 

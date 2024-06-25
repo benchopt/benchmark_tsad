@@ -5,6 +5,19 @@ with safe_import_context() as import_ctx:
     import numpy as np
     import requests
 
+url_xtrain = (
+    "https://drive.google.com/uc?&id=1e_JhpIURD"
+    "Lluw4IcHJF-dgtjjJXsPEKE&export=download"
+)
+url_xtest = (
+    "https://drive.google.com/uc?&id=10"
+    "-r-Zm0nfQJp0i-mVg3iXs6x0u9Ua25a&export=download"
+)
+url_ytest = (
+    "https://drive.google.com/uc?&id=1uYiXqmK3C"
+    "gyxk4U6-LgUni7JddQnlggs&export=download"
+)
+
 
 class Dataset(BaseDataset):
     name = "SMAP"
@@ -12,23 +25,15 @@ class Dataset(BaseDataset):
     install_cmd = "conda"
     requirements = ["pandas"]
 
+    parameters = {
+        "debug": [True],
+    }
+
     def get_data(self):
 
         # Check if the data is already here
         if not os.path.exists("data/SMAP/SMAP_train.npy"):
             os.makedirs("data/SMAP", exist_ok=True)
-            url_xtrain = (
-                "https://drive.google.com/uc?&id=1e_JhpIURD"
-                "Lluw4IcHJF-dgtjjJXsPEKE&export=download"
-            )
-            url_xtest = (
-                "https://drive.google.com/uc?&id=10"
-                "-r-Zm0nfQJp0i-mVg3iXs6x0u9Ua25a&export=download"
-            )
-            url_ytest = (
-                "https://drive.google.com/uc?&id=1uYiXqmK3C"
-                "gyxk4U6-LgUni7JddQnlggs&export=download"
-            )
 
             response = requests.get(url_xtrain)
             with open("data/SMAP/SMAP_train.npy", "wb") as f:
@@ -47,9 +52,10 @@ class Dataset(BaseDataset):
         y_test = np.load("data/SMAP/SMAP_test_label.npy")
 
         # Limiting the size of the dataset for testing purposes
-        X_train = X_train[:100]
-        X_test = X_test[:100]
-        y_test = y_test[:100]
+        if self.debug:
+            X_train = X_train[:100]
+            X_test = X_test[:100]
+            y_test = y_test[:100]
 
         return dict(
             X=X_train, y=y_test, X_test=X_test
