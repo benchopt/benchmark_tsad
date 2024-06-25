@@ -73,4 +73,4 @@ class Solver(BaseSolver):
         # Inlier : 0
         self.y_hat = np.append(
             self.raw_y_hat[0], self.raw_y_hat[1:, -1:])
-        return {"y_hat": self.y_hat}
+        return dict(y_hat=self.y_hat)

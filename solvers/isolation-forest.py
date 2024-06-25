@@ -62,4 +62,4 @@ class Solver(BaseSolver):
         self.y_hat = np.append(
             self.raw_y_hat[0], self.raw_y_hat[1:, -1:])
         self.y_hat = np.where(self.y_hat == -1, 1, 0)
-        return {"y_hat": self.y_hat}
+        return dict(y_hat=self.y_hat)
