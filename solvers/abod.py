@@ -37,31 +37,44 @@ class Solver(BaseSolver):
         if self.window:
             # We need to transform the data to have a rolling window
             if self.X_train is not None:
-                self.X_train = np.lib.stride_tricks.sliding_window_view(
+                self.Xw_train = np.lib.stride_tricks.sliding_window_view(
                     self.X_train, window_shape=self.window_size, axis=0
                 )[::self.stride].transpose(0, 2, 1)
 
             if self.X_test is not None:
-                self.X_test = np.lib.stride_tricks.sliding_window_view(
+                self.Xw_test = np.lib.stride_tricks.sliding_window_view(
                     self.X_test, window_shape=self.window_size, axis=0
                 )[::self.stride].transpose(0, 2, 1)
 
             if self.y_test is not None:
-                self.y_test = np.lib.stride_tricks.sliding_window_view(
+                self.yw_test = np.lib.stride_tricks.sliding_window_view(
                     self.y_test, window_shape=self.window_size, axis=0
                 )[::self.stride]
 
-            raw_y_hat = []
-            raw_anomaly_score = []
-            for i in range(len(self.X_test)):
-                self.clf.fit(self.X_test[i])
-                raw_y_hat.append(self.clf.predict(self.X_test[i]))
-                # Decision function : Larger scores are outliers
-                raw_anomaly_score.append(
-                    self.clf.decision_function(self.X_test[i]))
+            flatrain = self.Xw_train.reshape(self.Xw_train.shape[0], -1)
+            flatest = self.Xw_test.reshape(self.Xw_test.shape[0], -1)
+
+            self.clf.fit(flatrain)
+
+            raw_y_hat = self.clf.predict(flatest)
+            raw_anomaly_score = self.clf.decision_function(flatest)
+
+            # The results we get has a shape of
+            result_shape = (
+                (self.X_train.shape[0] - self.window_size) // self.stride
+            ) + 1
 
             self.raw_y_hat = np.array(raw_y_hat)
+            self.raw_y_hat = np.where(self.raw_y_hat == -1, 1, 0)
+            self.raw_y_hat = np.append(
+                np.full(self.X_train.shape[0] -
+                        result_shape, -1), self.raw_y_hat
+            )
+
             self.raw_anomaly_score = np.array(raw_anomaly_score)
+            self.raw_anomaly_score = np.append(
+                np.full(result_shape, -1), self.raw_anomaly_score
+            )
 
     def skip(self, X_train, X_test, y_test):
         if self.n_neighbors >= self.window_size:
@@ -71,6 +84,6 @@ class Solver(BaseSolver):
     def get_result(self):
         # Anomaly : 1
         # Inlier : 0
-        self.y_hat = np.append(
-            self.raw_y_hat[0], self.raw_y_hat[1:, -1:])
+        # To ignore : -1
+        self.y_hat = self.raw_y_hat
         return dict(y_hat=self.y_hat)
