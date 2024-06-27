@@ -18,7 +18,7 @@ class Objective(BaseObjective):
         Used to get the shape of the result.
         Our algorithms will return an array of labels of shape (n_samples,)
         """
-        return np.zeros(self.X_test.shape[0])
+        return dict(y_hat=np.ones(self.X_test.shape[0]))
 
     def set_data(self, X_train, y_test, X_test):
         "Set the data to compute the objective."
@@ -27,6 +27,11 @@ class Objective(BaseObjective):
 
     def evaluate_result(self, y_hat):
         "Evaluate the result provided by the solver."
+
+        to_discard = (y_hat == -1).sum()
+        self.y_test = self.y_test[to_discard:]
+        y_hat = y_hat[to_discard:]
+
         precision = precision_score(self.y_test, y_hat, zero_division=0)
         recall = recall_score(self.y_test, y_hat, zero_division=0)
         f1 = f1_score(self.y_test, y_hat, zero_division=0)
