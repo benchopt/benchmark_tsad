@@ -17,25 +17,30 @@ class Dataset(BaseDataset):
     n_anomaly = 90
 
     def get_data(self):
-        x1, _ = make_regression(
+        X_train, _ = make_regression(
             n_samples=self.n_samples,
             n_features=self.n_features,
             noise=self.noise,
         )
 
-        assert x1.shape == (self.n_samples, self.n_features)
+        X_test, _ = make_regression(
+            n_samples=self.n_samples,
+            n_features=self.n_features,
+            noise=self.noise,
+        )
 
-        y = np.zeros(self.n_samples)
+        assert X_test.shape == (self.n_samples, self.n_features)
+
+        y_test = np.zeros(self.n_samples)
         for i in range(self.n_anomaly):
             idx = np.random.randint(self.n_samples)
-            y[idx] = 1
+            y_test[idx] = 1
 
-        x1 = (
-            x1
+        X_test = (
+            X_test
             + np.random.randint(0, 2, (self.n_samples, self.n_features))
-            * y[:, None]
+            * y_test[:, None]
             * 10
         )
 
-        X = x1
-        return dict(X_train=None, y_test=y, X_test=X)
+        return dict(X_train=X_train, y_test=y_test, X_test=X_test)

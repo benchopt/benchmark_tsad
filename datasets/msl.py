@@ -29,7 +29,7 @@ class Dataset(BaseDataset):
     requirements = ["pandas", "requests"]
 
     parameters = {
-        "debug": [True],
+        "debug": [False],
     }
 
     def get_data(self):
@@ -57,9 +57,9 @@ class Dataset(BaseDataset):
 
         # Limiting the size of the dataset for testing purposes
         if self.debug:
-            X_train = X_train[:100]
-            X_test = X_test[:100]
-            y_test = y_test[:100]
+            X_train = X_train[:1000]
+            X_test = X_test[:1000]
+            y_test = y_test[:1000]
 
         print(X_train.shape, X_test.shape, y_test.shape)
 
