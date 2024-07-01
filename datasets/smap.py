@@ -58,5 +58,5 @@ class Dataset(BaseDataset):
             y_test = y_test[:1000]
 
         return dict(
-            X_train=X_train, y=y_test, X_test=X_test
+            X_train=X_train, y_test=y_test, X_test=X_test
         )
