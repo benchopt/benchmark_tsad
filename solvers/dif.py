@@ -11,7 +11,7 @@ class Solver(BaseSolver):
     name = "DIF"
 
     install_cmd = "conda"
-    requirements = ["pip:pyod", "pip:torch"]
+    requirements = ["pip:pyod"]
 
     parameters = {
         "contamination": [0.05, 0.1, 0.2],
@@ -72,8 +72,8 @@ class Solver(BaseSolver):
 
     def skip(self, X_train, X_test, y_test):
         # If cuda is not available, we skip the test because deep method
-        import torch
-        if not torch.cuda.is_available():
+        from benchopt.utils.sys_info import get_cuda_version
+        if get_cuda_version() is None:
             return True, "Cuda is not available"
         return False, None
 
