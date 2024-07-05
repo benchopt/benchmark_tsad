@@ -17,7 +17,7 @@ class Solver(BaseSolver):
     parameters = {
         "contamination": [5e-4, 5e-3, 5e-2, 0.1, 0.2, 0.4, 0.5],
         "window": [True],
-        "window_size": [20],
+        "window_size": [60, 120, 180],
         "stride": [1],
     }
 
