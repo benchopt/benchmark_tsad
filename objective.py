@@ -38,11 +38,11 @@ class Objective(BaseObjective):
         zoloss = zero_one_loss(self.y_test, y_hat)
 
         return {
-            "value": zoloss,  # having zoloss twice because of the API
-            "zoloss": zoloss,
             "precision": precision,
             "recall": recall,
             "f1": f1,
+            "zoloss": zoloss,
+            "value": zoloss,  # having zoloss twice because of the API
         }
 
     def get_objective(self):

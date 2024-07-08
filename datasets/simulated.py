@@ -11,10 +11,12 @@ class Dataset(BaseDataset):
     install_cmd = "conda"
     requirements = ["scikit-learn"]
 
-    n_samples = 100
-    n_features = 5
-    noise = 0.1
-    n_anomaly = 90
+    parameters = {
+        "n_samples": [100],
+        "n_features": [5],
+        "noise": [0.1],
+        "n_anomaly": [90],
+    }
 
     def get_data(self):
         X_train, _ = make_regression(
