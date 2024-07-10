@@ -39,3 +39,114 @@ def soft_precision(y_true, y_pred, detection_range=3):
             precision += 1
 
     return precision / np.sum(y_pred)
+
+
+def soft_precision2(y_true: np.ndarray,
+                    y_pred: np.ndarray,
+                    detection_range=3,
+                    ):
+    """Ratio of correctly detected anomalies to the number of total anomalies
+    If an anomaly is detected detection_range windows before or after
+    the true anomaly, we consider it as detected
+    e.g. detection_range=3, if anomaly detected at timestamp 5,
+    we consider y_pred correct if there is an anomaly at timestamp 2,..., 8
+
+    Parameters
+    ----------
+        y_true : np.ndarray
+            Ground truth labels
+        y_pred : np.ndarray
+            Predicted labels
+        detection_range : int, default=3
+            Range in which the anomaly is considered correctly detected
+
+    Returns
+    -------
+        precision : float
+            Precision score
+        em : int
+            Number of exact matches
+        da : int
+            Number of detected anomalies
+        ma : int
+            Number of missed anomalies
+    """
+    # EM : Exact Match
+    em = 0
+    # DA : Detected Anomaly
+    da = 0
+    # MA : Missed Anomaly
+    ma = 0
+    # DAIR = (EM + DA) / (EM + DA + MA)
+
+    # y_true_windows = np.lib.stride_tricks.sliding_window_view(
+    #     y_true, window_shape=detection_range*2+1, axis=0)
+
+    # y_pred_windows = np.lib.stride_tricks.sliding_window_view(
+    #     y_pred, window_shape=detection_range*2+1, axis=0)
+
+    # Counting exact matches and detected anomalies
+    for i in range(len(y_true)):
+        if y_true[i] == 1 and (y_true[i] == y_pred[i]):
+            em += 1
+
+        if y_pred[i] == 1 and (
+                y_true[i-detection_range:i+detection_range+1] == 1).any():
+            da += 1
+
+    # Counting missed anomalies
+    for i in range(detection_range, len(y_true)-detection_range):
+        if y_true[i] == 1 and (
+                y_pred[i-detection_range:i+detection_range+1] == 0).all():
+            ma += 1
+
+    return (em + da) / (em + da + ma), em, da, ma
+
+
+def soft_recall(y_true, y_pred, detection_range=3):
+    """
+    Parameters
+    ----------
+        y_true : np.ndarray
+            Ground truth labels
+        y_pred : np.ndarray
+            Predicted labels
+        detection_range : int, default=3
+            Range in which the anomaly is considered correctly detected
+
+    Returns
+    -------
+        Recall : float
+            Precision score
+        em : int
+            Number of exact matches
+        da : int
+            Number of detected anomalies
+        fa : int
+            Number of false anomalies
+    """
+    # EM : Exact Match
+    em = 0
+    # DA : Detected Anomaly
+    da = 0
+    # FA : False Anomaly
+    fa = 0
+
+    # TFDIR = (EM + DA) / (EM + DA + FA)
+
+    # Counting exact matches and detected anomalies
+    for i in range(len(y_true)):
+        if y_true[i] == 1 and (y_true[i] == y_pred[i]):
+            em += 1
+
+        if y_pred[i] == 1 and (
+                y_true[i-detection_range:i+detection_range+1] == 1).any():
+            da += 1
+
+    # Counting false anomalies
+    for i in range(detection_range, len(y_true)-detection_range):
+        if y_pred[i] == 1 and (
+                y_true[i-detection_range:i+detection_range+1] == 0).all():
+            fa += 1
+
+    return (em + da) / (em + da + fa), em, da, fa
