@@ -149,3 +149,77 @@ def soft_recall(y_true: np.ndarray,
     if em + da + fa == 0:
         return 0
     return (em + da) / (em + da + fa)
+
+
+def ctt(y_true: np.ndarray, y_pred: np.ndarray):
+    """
+    Candidate To Target: Means distance between predicted anomaly and
+    its closest true anomaly.
+
+    Parameters
+    ----------
+        y_true : np.ndarray
+            Ground truth labels
+        y_pred : np.ndarray
+            Predicted labels
+
+    Returns
+    -------
+        ctt : float
+            Closest True Time
+    """
+    if np.sum(y_pred) == 0:
+        # No predicted anomalies
+        return float('inf')
+
+    tot_signed_dist = 0
+
+    # Indices of true anomalies
+    true_anomalies = np.where(y_true == 1)[0]
+
+    for i in np.where(y_pred == 1)[0]:
+        if len(true_anomalies) > 0:
+            # signed distances to all true anomalies
+            signed_dists = true_anomalies - i
+            # signed distance with the smallest absolute value
+            min_signed_dist = signed_dists[np.argmin(np.abs(signed_dists))]
+            tot_signed_dist += min_signed_dist
+
+    return tot_signed_dist / np.sum(y_pred)
+
+
+def ttc(y_true: np.ndarray, y_pred: np.ndarray):
+    """
+    Target To Candidate: Means distance between true anomaly and
+    its closest predicted anomaly.
+
+    Parameters
+    ----------
+        y_true : np.ndarray
+            Ground truth labels
+        y_pred : np.ndarray
+            Predicted labels
+
+    Returns
+    -------
+        ttc : float
+            Target To Candidate
+    """
+    if np.sum(y_true) == 0:
+        # No true anomalies
+        return float('inf')
+
+    tot_signed_dist = 0
+
+    # Indices of predicted anomalies
+    pred_anomalies = np.where(y_pred == 1)[0]
+
+    for i in np.where(y_true == 1)[0]:
+        if len(pred_anomalies) > 0:
+            # signed distances to all predicted anomalies
+            signed_dists = pred_anomalies - i
+            # signed distance with the smallest absolute value
+            min_signed_dist = signed_dists[np.argmin(np.abs(signed_dists))]
+            tot_signed_dist += min_signed_dist
+
+    return tot_signed_dist / np.sum(y_true)
