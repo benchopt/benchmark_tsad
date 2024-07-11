@@ -133,7 +133,7 @@ def soft_recall(y_true: np.ndarray,
             fa += 1
 
         if y_true[i] == 1 and (
-                y_true[left:right] == 1).any():
+                y_pred[left:right] == 1).any():
             da += 1
 
     # Removing exact matches from detected anomalies because they are
