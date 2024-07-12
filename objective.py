@@ -1,4 +1,6 @@
 from benchopt import BaseObjective, safe_import_context
+from benchmark_utils.metrics import soft_precision as soft_precision_score
+from benchmark_utils.metrics import soft_recall as soft_recall_score
 
 with safe_import_context() as import_ctx:
     import numpy as np
@@ -32,15 +34,25 @@ class Objective(BaseObjective):
         self.y_test = self.y_test[to_discard:]
         y_hat = y_hat[to_discard:]
 
+        detection_range = 1
+
         precision = precision_score(self.y_test, y_hat, zero_division=0)
         recall = recall_score(self.y_test, y_hat, zero_division=0)
         f1 = f1_score(self.y_test, y_hat, zero_division=0)
         zoloss = zero_one_loss(self.y_test, y_hat)
+        soft_precision = soft_precision_score(
+            self.y_test, y_hat, detection_range=detection_range
+            )
+        soft_recall = soft_recall_score(
+            self.y_test, y_hat, detection_range=detection_range
+            )
 
         return {
             "precision": precision,
             "recall": recall,
             "f1": f1,
+            "soft_precision": soft_precision,
+            "soft_recall": soft_recall,
             "zoloss": zoloss,
             "value": zoloss,  # having zoloss twice because of the API
         }
