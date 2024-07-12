@@ -146,7 +146,7 @@ def soft_recall(y_true: np.ndarray,
     return (em + da) / (em + da + ma)
 
 
-def ctt(y_true: np.ndarray, y_pred: np.ndarray):
+def ctt(y_true: np.ndarray, y_pred: np.ndarray, return_signed: bool = False):
     """
     Candidate To Target: Means distance between predicted anomaly and
     its closest true anomaly.
@@ -157,6 +157,9 @@ def ctt(y_true: np.ndarray, y_pred: np.ndarray):
             Ground truth labels
         y_pred : np.ndarray
             Predicted labels
+        return_signed : bool, default=False
+            If True, return the signed distance.
+            If False, return the absolute distance.
 
     Returns
     -------
@@ -170,7 +173,7 @@ def ctt(y_true: np.ndarray, y_pred: np.ndarray):
         # No anomalies detected
         return 0
 
-    tot_signed_dist = 0
+    tot_dist = 0
 
     # Indices of true anomalies
     true_anomalies = np.where(y_true == 1)[0]
@@ -179,14 +182,18 @@ def ctt(y_true: np.ndarray, y_pred: np.ndarray):
         if len(true_anomalies) > 0:
             # signed distances to all true anomalies
             signed_dists = true_anomalies - i
-            # signed distance with the smallest absolute value
-            min_signed_dist = signed_dists[np.argmin(np.abs(signed_dists))]
-            tot_signed_dist += min_signed_dist
+            if return_signed:
+                # signed distance with the smallest absolute value
+                min_dist = signed_dists[np.argmin(np.abs(signed_dists))]
+            else:
+                # absolute distance with the smallest value
+                min_dist = np.abs(signed_dists).min()
+            tot_dist += min_dist
 
-    return tot_signed_dist / np.sum(y_pred)
+    return tot_dist / np.sum(y_pred)
 
 
-def ttc(y_true: np.ndarray, y_pred: np.ndarray):
+def ttc(y_true: np.ndarray, y_pred: np.ndarray, return_signed: bool = False):
     """
     Target To Candidate: Means distance between true anomaly and
     its closest predicted anomaly.
@@ -197,6 +204,9 @@ def ttc(y_true: np.ndarray, y_pred: np.ndarray):
             Ground truth labels
         y_pred : np.ndarray
             Predicted labels
+        return_signed : bool, default=False
+            If True, return the signed distance.
+            If False, return the absolute distance.
 
     Returns
     -------
@@ -204,13 +214,13 @@ def ttc(y_true: np.ndarray, y_pred: np.ndarray):
             Target To Candidate
     """
     if np.sum(y_pred) == 0:
-        # No true anomalies
+        # No anomalies detected
         return float('inf')
     elif np.sum(y_true) == 0:
-        # No anomalies detected
+        # No true anomalies
         return 0
 
-    tot_signed_dist = 0
+    tot_dist = 0
 
     # Indices of predicted anomalies
     pred_anomalies = np.where(y_pred == 1)[0]
@@ -219,8 +229,12 @@ def ttc(y_true: np.ndarray, y_pred: np.ndarray):
         if len(pred_anomalies) > 0:
             # signed distances to all predicted anomalies
             signed_dists = pred_anomalies - i
-            # signed distance with the smallest absolute value
-            min_signed_dist = signed_dists[np.argmin(np.abs(signed_dists))]
-            tot_signed_dist += min_signed_dist
+            if return_signed:
+                # signed distance with the smallest absolute value
+                min_dist = signed_dists[np.argmin(np.abs(signed_dists))]
+            else:
+                # absolute distance with the smallest value
+                min_dist = np.abs(signed_dists).min()
+            tot_dist += min_dist
 
-    return tot_signed_dist / np.sum(y_true)
+    return tot_dist / np.sum(y_true)
