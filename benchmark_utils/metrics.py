@@ -203,9 +203,12 @@ def ttc(y_true: np.ndarray, y_pred: np.ndarray):
         ttc : float
             Target To Candidate
     """
-    if np.sum(y_true) == 0:
+    if np.sum(y_pred) == 0:
         # No true anomalies
         return float('inf')
+    elif np.sum(y_true) == 0:
+        # No anomalies detected
+        return 0
 
     tot_signed_dist = 0
 

@@ -105,6 +105,19 @@ def test_ctt():
     p6[4] = p6[8] = 1
     assert ctt(y1, p6) == -1.0
 
+    y2 = np.zeros(10)
+    p7 = np.zeros(10)
+    p7[4] = p7[8] = 1
+    assert ctt(y2, p7) == float('inf')
+
+    p8 = np.zeros(10)
+    assert ctt(y2, p8) == float('inf')
+
+    y3 = np.zeros(10)
+    y3[2] = 1
+    p9 = np.zeros(10)
+    assert ctt(y3, p9) == 0.0
+
 
 def test_ttc():
     y1 = np.zeros(10)
@@ -133,3 +146,16 @@ def test_ttc():
     p6 = np.zeros(10)
     p6[4] = p6[8] = 1
     assert ttc(y1, p6) == 1.0
+
+    y2 = np.zeros(10)
+    p7 = np.zeros(10)
+    p7[4] = p7[8] = 1
+    assert ctt(y2, p7) == 0
+
+    p8 = np.zeros(10)
+    assert ctt(y2, p8) == 0
+
+    y3 = np.zeros(10)
+    y3[2] = 1
+    p9 = np.zeros(10)
+    assert ctt(y3, p9) == float('inf')
