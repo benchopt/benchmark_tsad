@@ -83,79 +83,79 @@ def test_ctt():
     y1[3] = y1[7] = 1
 
     p1 = y1.copy()
-    assert ctt(y1, p1) == 0.0
+    assert ctt(y1, p1, return_signed=True) == 0.0
 
     p2 = y1.copy()
     p2[7] = 0
-    assert ctt(y1, p2) == 0.0
+    assert ctt(y1, p2, return_signed=True) == 0.0
 
     p3 = y1.copy()
     p3[8] = 1
-    assert ctt(y1, p3) == -1/3
+    assert ctt(y1, p3, return_signed=True) == -1/3
 
     p4 = y1.copy()
     p4[9] = 1
-    assert ctt(y1, p4) == -2/3
+    assert ctt(y1, p4, return_signed=True) == -2/3
 
     p5 = np.zeros(10)
     p5[0] = 1
-    assert ctt(y1, p5) == 3.0
+    assert ctt(y1, p5, return_signed=True) == 3.0
 
     p6 = np.zeros(10)
     p6[4] = p6[8] = 1
-    assert ctt(y1, p6) == -1.0
+    assert ctt(y1, p6, return_signed=True) == -1.0
 
     y2 = np.zeros(10)
     p7 = np.zeros(10)
     p7[4] = p7[8] = 1
-    assert ctt(y2, p7) == float('inf')
+    assert ctt(y2, p7, return_signed=True) == float('inf')
 
     p8 = np.zeros(10)
-    assert ctt(y2, p8) == float('inf')
+    assert ctt(y2, p8, return_signed=True) == float('inf')
 
     y3 = np.zeros(10)
     y3[2] = 1
     p9 = np.zeros(10)
-    assert ctt(y3, p9) == 0.0
+    assert ctt(y3, p9, return_signed=True) == 0.0
 
 
 def test_ttc():
     y1 = np.zeros(10)
     y1[3] = y1[7] = 1
-    assert ttc(y1, y1) == 0.0
+    assert ttc(y1, y1, return_signed=True) == 0.0
 
     p1 = y1.copy()
-    assert ttc(y1, p1) == 0.0
+    assert ttc(y1, p1, return_signed=True) == 0.0
 
     p2 = y1.copy()
     p2[7] = 0
-    assert ttc(y1, p2) == -2.0
+    assert ttc(y1, p2, return_signed=True) == -2.0
 
     p3 = y1.copy()
     p3[8] = 1
-    assert ttc(y1, p3) == 0.0
+    assert ttc(y1, p3, return_signed=True) == 0.0
 
     p4 = y1.copy()
     p4[9] = 1
-    assert ttc(y1, p4) == 0.0
+    assert ttc(y1, p4, return_signed=True) == 0.0
 
     p5 = np.zeros(10)
     p5[0] = 1
-    assert ttc(y1, p5) == -5.0
+    assert ttc(y1, p5, return_signed=True) == -5.0
 
     p6 = np.zeros(10)
     p6[4] = p6[8] = 1
-    assert ttc(y1, p6) == 1.0
+    assert ttc(y1, p6, return_signed=True) == 1.0
 
     y2 = np.zeros(10)
     p7 = np.zeros(10)
     p7[4] = p7[8] = 1
-    assert ctt(y2, p7) == 0
+    assert ttc(y2, p7, return_signed=True) == 0
 
     p8 = np.zeros(10)
-    assert ctt(y2, p8) == 0
+    assert ttc(y2, p8, return_signed=True) == float('inf')
 
     y3 = np.zeros(10)
     y3[2] = 1
     p9 = np.zeros(10)
-    assert ctt(y3, p9) == float('inf')
+    assert ttc(y3, p9, return_signed=True) == float('inf')
