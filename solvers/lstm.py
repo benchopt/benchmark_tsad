@@ -58,7 +58,7 @@ class Solver(BaseSolver):
         "window": [True],
         "window_size": [128],  # window_size = seq_len
         "stride": [1],
-        "percentile": [97, 98, 99, 99.9],
+        "percentile": [97],
         "encoder_layers": [32],
         "decoder_layers": [32],
     }
@@ -174,6 +174,8 @@ class Solver(BaseSolver):
     def skip(self, X_train, X_test, y_test):
         if self.device != torch.device("cuda"):
             return True, "CUDA is not available. Skipping this solver."
+        elif X_train.shape[0] < self.window_size:
+            return True, "Not enough samples to create a window."
         return False, None
 
     def get_result(self):
