@@ -1,8 +1,8 @@
 import pytest  # noqa
 
 import numpy as np
-from benchmark_utils.metrics import soft_precision, soft_recall, ctt, ttc
 
+from benchmark_utils.metrics import soft_precision, soft_recall, ctt, ttc
 
 def test_soft_precision():
 
