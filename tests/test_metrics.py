@@ -1,7 +1,9 @@
 import pytest  # noqa
 
 import numpy as np
-from benchmark_utils.metrics import soft_precision, soft_recall, ctt, ttc
+from benchmark_utils.metrics import (
+    soft_precision, soft_recall, soft_f1, ctt, ttc
+)
 
 
 def test_soft_precision():
@@ -76,6 +78,34 @@ def test_soft_recall():
     p6[4] = p6[8] = 1
     assert soft_recall(y1, p6, detection_range=1,
                        return_counts=True) == (1.0, 0, 2, 0)
+
+
+def test_soft_f1():
+
+    y1 = np.zeros(10)
+    y1[3] = y1[7] = 1
+
+    precision = soft_precision(y1, y1, detection_range=1)
+    recall = soft_recall(y1, y1, detection_range=1)
+
+    assert soft_f1(y1, y1, detection_range=1) == 1.0
+
+    p2 = y1.copy()
+    p2[7] = 0
+    precision = soft_precision(y1, p2, detection_range=1)
+    recall = soft_recall(y1, p2, detection_range=1)
+
+    assert soft_f1(y1, p2, detection_range=1) == 2 * \
+        precision * recall / (precision + recall)
+
+    p3 = y1.copy()
+    p3[8] = 1
+
+    precision = soft_precision(y1, p3, detection_range=1)
+    recall = soft_recall(y1, p3, detection_range=1)
+
+    assert soft_f1(y1, p3, detection_range=1) == 2 * \
+        precision * recall / (precision + recall)
 
 
 def test_ctt():
