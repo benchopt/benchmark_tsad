@@ -238,3 +238,24 @@ def ttc(y_true: np.ndarray, y_pred: np.ndarray, return_signed: bool = False):
             tot_dist += min_dist
 
     return tot_dist / np.sum(y_true)
+
+
+def soft_f1(precision, recall):
+    """
+    Calculate the F1 score from precision and recall.
+
+    Parameters
+    ----------
+        precision : float
+            Precision score
+        recall : float
+            Recall score
+
+    Returns
+    -------
+        f1 : float
+            F1 score
+    """
+    if precision + recall == 0:
+        return 0
+    return 2 * (precision * recall) / (precision + recall)
