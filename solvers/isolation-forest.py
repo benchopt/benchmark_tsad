@@ -70,6 +70,12 @@ class Solver(BaseSolver):
                 np.full(result_shape, -1), self.raw_anomaly_score
             )
 
+    def skip(self, X_train, X_test, y_test):
+        # Skip if dataset size is smaller than window size
+        if X_train.shape[0] < self.window_size:
+            return True, "Window size is larger than dataset size. Skipping."
+        return False, None
+
     def get_result(self):
         # Anomaly : 1
         # Inlier : 0

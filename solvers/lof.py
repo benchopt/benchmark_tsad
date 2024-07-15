@@ -78,6 +78,10 @@ class Solver(BaseSolver):
     def skip(self, X_train, y_test, X_test):
         if self.n_neighbors > self.window_size:
             return True, "Number of neighbors greater than number of samples."
+        if self.n_neighbors > X_train.shape[0]:
+            return True, "Number of neighbors greater than number of samples."
+        if X_train.shape[0] < self.window_size:
+            return True, "No enough samples to create a window"
         return False, None
 
     def get_result(self):

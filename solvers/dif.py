@@ -75,6 +75,8 @@ class Solver(BaseSolver):
         from benchopt.utils.sys_info import get_cuda_version
         if get_cuda_version() is None:
             return True, "Cuda is not available"
+        if X_train.shape[0] < self.window_size:
+            return True, "Not enough samples to create a window"
         return False, None
 
     def get_result(self):
