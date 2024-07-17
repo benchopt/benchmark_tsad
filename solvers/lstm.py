@@ -43,8 +43,8 @@ class LSTM_Autoencoder(nn.Module):
 class Solver(BaseSolver):
     name = "LSTM"
 
-    install_cmd = "pip"
-    requirements = ["torch", "tqdm"]
+    install_cmd = "conda"
+    requirements = ["pip:torch", "tqdm"]
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -56,7 +56,7 @@ class Solver(BaseSolver):
         "n_epochs": [50],
         "lr": [1e-5],
         "window": [True],
-        "window_size": [128],  # window_size = seq_len
+        "window_size": [256],  # window_size = seq_len
         "stride": [1],
         "percentile": [97],
         "encoder_layers": [32],
@@ -74,8 +74,6 @@ class Solver(BaseSolver):
         self.X_test, self.y_test = X_test, y_test
         self.n_features = X_train.shape[1]
         self.seq_len = self.window_size
-
-        print("Simulated data shape: ", X_train.shape, X_test.shape)
 
         self.model = LSTM_Autoencoder(
             self.seq_len,
@@ -146,6 +144,9 @@ class Solver(BaseSolver):
             train_loss /= len(self.train_loader)
 
             ti.set_postfix(train_loss=f"{train_loss:.5f}")
+
+        # Saving the model
+        torch.save(self.model.state_dict(), "model.pth")
 
         self.model.eval()
         raw_reconstruction = []
