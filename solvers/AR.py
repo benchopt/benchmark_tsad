@@ -119,6 +119,7 @@ class Solver(BaseSolver):
 
         return averaged_predictions
 
+
     def run(self, _):
 
         self.model.to(self.device)
