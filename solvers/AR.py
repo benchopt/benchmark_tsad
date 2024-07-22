@@ -1,5 +1,6 @@
 # AR model
 from benchopt import BaseSolver, safe_import_context
+from benchmark_utils import mean_overlaping_pred
 
 with safe_import_context() as import_ctx:
     import torch
@@ -82,44 +83,6 @@ class Solver(BaseSolver):
                 axis=0
             ).transpose(0, 2, 1)
 
-    def mean_overlaping_pred(
-        self, predictions, stride
-    ):
-        """
-        Averages overlapping predictions for multivariate time series.
-
-        Args:
-        predictions: np.ndarray, shape (n_windows, H, n_features)
-                    The predicted values for each window for each feature.
-        stride: int
-                The stride size.
-
-        Returns:
-        np.ndarray: Averaged predictions for each feature.
-        """
-        n_windows, H, n_features = predictions.shape
-        total_length = (n_windows-1) * stride + H - 1
-
-        # Array to store accumulated predictions for each feature
-        accumulated = np.zeros((total_length, n_features))
-        # store the count of predictions at each point for each feature
-        counts = np.zeros((total_length, n_features))
-
-        # Accumulate predictions and counts based on stride
-        for i in range(n_windows):
-            start = i * stride
-            accumulated[start:start+H] += predictions[i]
-            counts[start:start+H] += 1
-
-        # Avoid division by zero
-        counts[counts == 0] = 1
-
-        # Average the accumulated predictions
-        averaged_predictions = accumulated / counts
-
-        return averaged_predictions
-
-
     def run(self, _):
 
         self.model.to(self.device)
@@ -181,7 +144,7 @@ class Solver(BaseSolver):
         x_hat = np.zeros_like(self.X_test)-1
         x_hat[self.window_size:self.window_size+self.horizon] = xw_hat[0]
         # x_hat[self.window_size+self.horizon:] = xw_hat[1:, -self.horizon]
-        x_hat[self.window_size+self.horizon:] = self.mean_overlaping_pred(
+        x_hat[self.window_size+self.horizon:] = mean_overlaping_pred(
             xw_hat, 1
         )
 
