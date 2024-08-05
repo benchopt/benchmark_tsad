@@ -12,7 +12,8 @@ class Solver(BaseSolver):
     requirements = ["scikit-learn"]
 
     parameters = {
-        "nu": [0.01, 0.05, 0.1, 0.2],
+        "nu": [0.001, 0.01, 0.05],
+        "gamma": [1e-5, 1e-2],
         "kernel": ["rbf"],
         "window": [True],
         "window_size": [128],
@@ -24,7 +25,11 @@ class Solver(BaseSolver):
     def set_objective(self, X_train, y_test, X_test):
         self.X_train = X_train
         self.X_test, self.y_test = X_test, y_test
-        self.clf = OneClassSVM(nu=self.nu, kernel=self.kernel)
+        self.clf = OneClassSVM(
+            nu=self.nu,
+            kernel=self.kernel,
+            gamma=self.gamma,
+        )
 
         if self.window:
             if self.X_train is not None:
