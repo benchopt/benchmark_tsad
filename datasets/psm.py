@@ -49,7 +49,7 @@ class Dataset(BaseDataset):
         X_train = X_train.to_numpy()
 
         X_test = pd.read_csv(test_path)
-        X_test.fillna(X_test.mean(), inplace=True)
+        X_test.fillna(X_train.mean(), inplace=True)
         X_test = X_test.to_numpy()
 
         y_test = pd.read_csv(test_label_path).to_numpy()[:, 1]
