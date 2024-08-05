@@ -1,22 +1,22 @@
-from benchopt import BaseDataset, safe_import_context
+from benchopt import BaseDataset, safe_import_context, config
 
 with safe_import_context() as import_ctx:
-    import os
+    import pathlib
     import numpy as np
     import requests
 
 # Create global variables to store the urls
-url_xtrain = (
+URL_XTRAIN = (
     "https://drive.google.com/uc?&id="
     "1PMzjODVFblVnwq8xo7pKHrdbczPxdqTa&export=download"
 )
 
-url_xtest = (
+URL_XTEST = (
     "https://drive.google.com/uc?&id="
     "1OcNc0YQsOMw9jQIIHgiOXVG03wjXbEiM&export=download"
 )
 
-url_ytest = (
+URL_YTEST = (
     "https://drive.google.com/uc?&id="
     "19vR0QvKluuiIT2H5mCFNIJh6xGVwshDd&export=download"
 )
@@ -26,7 +26,7 @@ class Dataset(BaseDataset):
     name = "MSL"
 
     install_cmd = "conda"
-    requirements = ["pandas", "requests"]
+    requirements = ["pandas", "requests", "pathlib"]
 
     parameters = {
         "debug": [False],
@@ -34,26 +34,28 @@ class Dataset(BaseDataset):
 
     def get_data(self):
         # Adding get_data_path method soon
+        train_path = config.get_data_path(key="msl_train")
+        test_path = config.get_data_path(key="msl_test")
+        test_label_path = config.get_data_path(key="msl_test_label")
 
         # Check if the data is already here
-        if not os.path.exists("data/MSL/MSL_train.npy"):
-            os.makedirs("data/MSL", exist_ok=True)
+        if not pathlib.Path.exists(train_path):
 
-            response = requests.get(url_xtrain)
-            with open("data/MSL/MSL_train.npy", "wb") as f:
+            response = requests.get(URL_XTRAIN)
+            with open(train_path, "wb") as f:
                 f.write(response.content)
 
-            response = requests.get(url_xtest)
-            with open("data/MSL/MSL_test.npy", "wb") as f:
+            response = requests.get(URL_XTEST)
+            with open(test_path, "wb") as f:
                 f.write(response.content)
 
-            response = requests.get(url_ytest)
-            with open("data/MSL/MSL_test_label.npy", "wb") as f:
+            response = requests.get(URL_YTEST)
+            with open(test_label_path, "wb") as f:
                 f.write(response.content)
 
-        X_train = np.load("data/MSL/MSL_train.npy")
-        X_test = np.load("data/MSL/MSL_test.npy")
-        y_test = np.load("data/MSL/MSL_test_label.npy")
+        X_train = np.load(train_path)
+        X_test = np.load(test_path)
+        y_test = np.load(test_label_path)
 
         # Limiting the size of the dataset for testing purposes
         if self.debug:
