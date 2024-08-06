@@ -34,9 +34,9 @@ class Dataset(BaseDataset):
 
     def get_data(self):
         path = config.get_data_path(key="SMAP")
-
         # Check if the data is already here
         if not pathlib.Path.exists(path):
+            path.mkdir(parents=True, exist_ok=True)
 
             response = requests.get(URL_XTRAIN)
             with open(pathlib.Path(path) / "SMAP_train.npy", "wb") as f:

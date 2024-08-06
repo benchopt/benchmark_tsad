@@ -36,14 +36,18 @@ class Dataset(BaseDataset):
         path = config.get_data_path(key="MSL")
         # Check if the data is already here
         if not pathlib.Path.exists(path):
+            path.mkdir(parents=True, exist_ok=True)
+
             response = requests.get(URL_XTRAIN)
-            with open(pathlib.Path(path) / "MSL_train.npy", "wb") as f:
+            with open(path / "MSL_train.npy", "wb") as f:
                 f.write(response.content)
+
             response = requests.get(URL_XTEST)
-            with open(pathlib.Path(path) / "MSL_test.npy", "wb") as f:
+            with open(path / "MSL_test.npy", "wb") as f:
                 f.write(response.content)
+
             response = requests.get(URL_YTEST)
-            with open(pathlib.Path(path) / "MSL_test_label.npy", "wb") as f:
+            with open(path / "MSL_test_label.npy", "wb") as f:
                 f.write(response.content)
 
         X_train = np.load(path / "MSL_train.npy")

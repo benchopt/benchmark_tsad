@@ -28,16 +28,19 @@ class Dataset(BaseDataset):
     }
 
     def get_data(self):
-        # Check if the data is already here
         path = config.get_data_path(key="PSM")
-
+        # Check if the data is already here
         if not pathlib.Path.exists(path):
+            path.mkdir(parents=True, exist_ok=True)
+
             response = requests.get(URL_XTRAIN)
             with open(path / "PSM_train.csv", "wb") as f:
                 f.write(response.content)
+
             response = requests.get(URL_XTEST)
             with open(path / "PSM_test.csv", "wb") as f:
                 f.write(response.content)
+
             response = requests.get(URL_YTEST)
             with open(path / "PSM_test_label.csv", "wb") as f:
                 f.write(response.content)
