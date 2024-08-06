@@ -44,7 +44,7 @@ class Solver(BaseSolver):
     name = "LSTM"
 
     install_cmd = "conda"
-    requirements = ["pip:torch", "tqdm"]
+    requirements = ["pip::torch", "tqdm"]
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
