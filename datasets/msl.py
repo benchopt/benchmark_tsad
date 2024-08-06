@@ -26,36 +26,29 @@ class Dataset(BaseDataset):
     name = "MSL"
 
     install_cmd = "conda"
-    requirements = ["pandas", "requests", "pathlib"]
+    requirements = ["pandas", "requests"]
 
     parameters = {
         "debug": [False],
     }
 
     def get_data(self):
-        # Adding get_data_path method soon
-        train_path = config.get_data_path(key="msl_train")
-        test_path = config.get_data_path(key="msl_test")
-        test_label_path = config.get_data_path(key="msl_test_label")
-
+        path = config.get_data_path(key="MSL")
         # Check if the data is already here
-        if not pathlib.Path.exists(train_path):
-
+        if not pathlib.Path.exists(path):
             response = requests.get(URL_XTRAIN)
-            with open(train_path, "wb") as f:
+            with open(pathlib.Path(path) / "MSL_train.npy", "wb") as f:
                 f.write(response.content)
-
             response = requests.get(URL_XTEST)
-            with open(test_path, "wb") as f:
+            with open(pathlib.Path(path) / "MSL_test.npy", "wb") as f:
                 f.write(response.content)
-
             response = requests.get(URL_YTEST)
-            with open(test_label_path, "wb") as f:
+            with open(pathlib.Path(path) / "MSL_test_label.npy", "wb") as f:
                 f.write(response.content)
 
-        X_train = np.load(train_path)
-        X_test = np.load(test_path)
-        y_test = np.load(test_label_path)
+        X_train = np.load(path / "MSL_train.npy")
+        X_test = np.load(path / "MSL_test.npy")
+        y_test = np.load(path / "MSL_test_label.npy")
 
         # Limiting the size of the dataset for testing purposes
         if self.debug:

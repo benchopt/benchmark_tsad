@@ -33,28 +33,26 @@ class Dataset(BaseDataset):
     }
 
     def get_data(self):
-        train_path = config.get_data_path(key="smap_train")
-        test_path = config.get_data_path(key="smap_test")
-        test_label_path = config.get_data_path(key="smap_test_label")
+        path = config.get_data_path(key="SMAP")
 
         # Check if the data is already here
-        if not pathlib.Path.exists(train_path):
+        if not pathlib.Path.exists(path):
 
             response = requests.get(URL_XTRAIN)
-            with open(train_path, "wb") as f:
+            with open(pathlib.Path(path) / "SMAP_train.npy", "wb") as f:
                 f.write(response.content)
 
             response = requests.get(URL_XTEST)
-            with open(test_path, "wb") as f:
+            with open(pathlib.Path(path) / "SMAP_test.npy", "wb") as f:
                 f.write(response.content)
 
             response = requests.get(URL_YTEST)
-            with open(test_label_path, "wb") as f:
+            with open(pathlib.Path(path) / "SMAP_test_label.npy", "wb") as f:
                 f.write(response.content)
 
-        X_train = np.load(train_path)
-        X_test = np.load(test_path)
-        y_test = np.load(test_label_path)
+        X_train = np.load(path / "SMAP_train.npy")
+        X_test = np.load(path / "SMAP_test.npy")
+        y_test = np.load(path / "SMAP_test_label.npy")
 
         # Limiting the size of the dataset for testing purposes
         if self.debug:

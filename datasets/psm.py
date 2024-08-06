@@ -22,37 +22,35 @@ URL_YTEST = (
 class Dataset(BaseDataset):
     name = "PSM"
     install_cmd = "conda"
-    requirements = ["pandas", "pathlib"]
+    requirements = ["pandas"]
     parameters = {
         "debug": [False],
     }
 
     def get_data(self):
         # Check if the data is already here
-        train_path = config.get_data_path(key="psm_train")
-        test_path = config.get_data_path(key="psm_test")
-        test_label_path = config.get_data_path(key="psm_test_label")
+        path = config.get_data_path(key="PSM")
 
-        if not pathlib.Path.exists(train_path):
+        if not pathlib.Path.exists(path):
             response = requests.get(URL_XTRAIN)
-            with open(train_path, "wb") as f:
+            with open(path / "PSM_train.csv", "wb") as f:
                 f.write(response.content)
             response = requests.get(URL_XTEST)
-            with open(test_path, "wb") as f:
+            with open(path / "PSM_test.csv", "wb") as f:
                 f.write(response.content)
             response = requests.get(URL_YTEST)
-            with open(test_label_path, "wb") as f:
+            with open(path / "PSM_test_label.csv", "wb") as f:
                 f.write(response.content)
 
-        X_train = pd.read_csv(train_path)
+        X_train = pd.read_csv(path / "PSM_train.csv")
         X_train.fillna(X_train.mean(), inplace=True)
         X_train = X_train.to_numpy()
 
-        X_test = pd.read_csv(test_path)
-        X_test.fillna(X_test.mean(), inplace=True)
+        X_test = pd.read_csv(path / "PSM_test.csv")
+        X_test.fillna(X_train.mean(), inplace=True)
         X_test = X_test.to_numpy()
 
-        y_test = pd.read_csv(test_label_path).to_numpy()[:, 1]
+        y_test = pd.read_csv(path / "PSM_test_label.csv").to_numpy()[:, 1]
 
         # Limiting the size of the dataset for testing purposes
         if self.debug:
