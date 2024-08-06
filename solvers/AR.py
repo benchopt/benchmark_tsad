@@ -36,7 +36,7 @@ class Solver(BaseSolver):
     name = "AR"
 
     install_cmd = "conda"
-    requirements = ["torch", "tqdm"]
+    requirements = ["pytorch", "tqdm"]
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

@@ -61,7 +61,7 @@ class Solver(BaseSolver):
     name = "Transformer"
 
     install_cmd = "conda"
-    requirements = ["torch", "tqdm"]
+    requirements = ["pytorch", "tqdm"]
 
     device = torch.device("cuda:2" if torch.cuda.is_available() else "cpu")
 

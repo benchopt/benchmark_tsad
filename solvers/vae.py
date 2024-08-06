@@ -10,7 +10,7 @@ class Solver(BaseSolver):
     name = "VAE"
 
     install_cmd = "conda"
-    requirements = ["pyod", "tqdm", "torch"]
+    requirements = ["pyod", "tqdm", "pytorch"]
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
