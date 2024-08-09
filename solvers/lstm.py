@@ -3,14 +3,13 @@ from benchopt import BaseSolver, safe_import_context
 
 with safe_import_context() as import_ctx:
     import torch
-    import torch.nn as nn
     import torch.optim as optim
     import numpy as np
     from torch.utils.data import DataLoader
     from tqdm import tqdm
 
 
-class LSTM_Autoencoder(nn.Module):
+class LSTM_Autoencoder(torch.nn.Module):
     def __init__(self,
                  seq_len,
                  n_features, embedding_dim=64, enc_layers=1, dec_layers=1,):
@@ -18,14 +17,14 @@ class LSTM_Autoencoder(nn.Module):
         self.seq_len, self.n_features = seq_len, n_features
         self.embedding_dim, self.hidden_dim = embedding_dim, 2 * embedding_dim
 
-        self.encoder = nn.LSTM(
+        self.encoder = torch.nn.LSTM(
             input_size=n_features,
             hidden_size=self.hidden_dim,
             num_layers=enc_layers,
             batch_first=True
         )
 
-        self.decoder = nn.LSTM(
+        self.decoder = torch.nn.LSTM(
             input_size=self.hidden_dim,
             hidden_size=n_features,
             num_layers=dec_layers,
@@ -44,7 +43,7 @@ class Solver(BaseSolver):
     name = "LSTM"
 
     install_cmd = "conda"
-    requirements = ["pip::torch", "pip::torchvision", "tqdm"]
+    requirements = ["pip::torch", "tqdm"]
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -83,7 +82,7 @@ class Solver(BaseSolver):
             self.decoder_layers,
         )
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.lr)
-        self.criterion = nn.MSELoss()
+        self.criterion = torch.nn.MSELoss()
 
         if self.window:
             if self.X_train is not None:

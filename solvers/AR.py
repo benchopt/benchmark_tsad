@@ -4,12 +4,12 @@ from benchmark_utils import mean_overlaping_pred
 
 with safe_import_context() as import_ctx:
     import torch
-    from torch import optim, nn
+    from torch import optim
     import numpy as np
     from tqdm import tqdm
 
 
-class AR_model(nn.Module):
+class AR_model(torch.nn.Module):
     """
     Single linear layer for autoregressive model
     Taking in input a window of size window_size and
@@ -23,7 +23,9 @@ class AR_model(nn.Module):
         self.window_size = window_size
         self.n_features = n_features
         self.horizon = horizon
-        self.linear = nn.Linear(window_size * n_features, horizon * n_features)
+        self.linear = torch.nn.Linear(
+            window_size * n_features, horizon * n_features
+            )
 
     def forward(self, x):
         x = x.reshape(x.size(0), -1)
@@ -36,7 +38,7 @@ class Solver(BaseSolver):
     name = "AR"
 
     install_cmd = "conda"
-    requirements = ["pip::torch", "pip::torchvision", "tqdm"]
+    requirements = ["pip::torch", "tqdm"]
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -67,7 +69,7 @@ class Solver(BaseSolver):
             lr=self.lr,
             # weight_decay=self.weight_decay
         )
-        self.criterion = nn.MSELoss()
+        self.criterion = torch.nn.MSELoss()
 
         if self.X_train is not None:
             self.Xw_train = np.lib.stride_tricks.sliding_window_view(

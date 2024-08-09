@@ -4,13 +4,12 @@ from benchmark_utils import mean_overlaping_pred
 
 with safe_import_context() as import_ctx:
     import torch
-    import torch.nn as nn
     import torch.optim as optim
     import numpy as np
     from tqdm import tqdm
 
 
-class TransformerModel(nn.Module):
+class TransformerModel(torch.nn.Module):
     def __init__(self,
                  input_size,
                  sequence_length,
@@ -27,18 +26,18 @@ class TransformerModel(nn.Module):
         # Ensure d_model is divisible by num_heads
         self.d_model = ((input_size - 1) // num_heads + 1) * num_heads
 
-        self.input_projection = nn.Linear(input_size, self.d_model)
+        self.input_projection = torch.nn.Linear(input_size, self.d_model)
 
-        self.encoder_layer = nn.TransformerEncoderLayer(
+        self.encoder_layer = torch.nn.TransformerEncoderLayer(
             d_model=self.d_model,
             nhead=num_heads,
             dim_feedforward=dim_feedforward
         )
-        self.transformer_encoder = nn.TransformerEncoder(
+        self.transformer_encoder = torch.nn.TransformerEncoder(
             self.encoder_layer,
             num_layers=num_layers
         )
-        self.fc_out = nn.Linear(
+        self.fc_out = torch.nn.Linear(
             self.d_model * sequence_length, horizon * input_size)
 
     def forward(self, src):
@@ -61,7 +60,7 @@ class Solver(BaseSolver):
     name = "Transformer"
 
     install_cmd = "conda"
-    requirements = ["pip::torch", "pip::torchvision", "tqdm"]
+    requirements = ["pip::torch", "tqdm"]
 
     device = torch.device("cuda:2" if torch.cuda.is_available() else "cpu")
 
@@ -95,7 +94,7 @@ class Solver(BaseSolver):
             dim_feedforward=self.dim_feedforward
         ).to(self.device)
 
-        self.criterion = nn.MSELoss()
+        self.criterion = torch.nn.MSELoss()
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.lr)
         self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(
             self.optimizer, mode='min', factor=0.5, patience=5, verbose=True
@@ -152,7 +151,7 @@ class Solver(BaseSolver):
                 loss.backward()
 
                 # Gradient clipping
-                torch.nn.utils.clip_grad_norm_(
+                torch.torch.nn.utils.clip_grad_norm_(
                     self.model.parameters(), max_norm=1.0)
 
                 self.optimizer.step()
