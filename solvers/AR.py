@@ -15,8 +15,6 @@ class Solver(BaseSolver):
     install_cmd = "conda"
     requirements = ["pip::torch", "tqdm"]
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
     sampling_strategy = "run_once"
 
     parameters = {
@@ -33,6 +31,10 @@ class Solver(BaseSolver):
         self.X_train = X_train
         self.X_test, self.y_test = X_test, y_test
         self.n_features = X_train.shape[1]
+
+        self.device = torch.device(
+            "cuda" if torch.cuda.is_available() else "cpu"
+            )
 
         self.model = Solver.AR_model(
             self.window_size,

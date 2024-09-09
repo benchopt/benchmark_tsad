@@ -31,7 +31,7 @@ class Solver(BaseSolver):
     def set_objective(self, X_train, y_test, X_test):
         self.X_train = X_train
         self.X_test, self.y_test = X_test, y_test
-        
+
         device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu"
         )
@@ -48,10 +48,10 @@ class Solver(BaseSolver):
 
         if self.window:
             self.Xw_train = np.lib.stride_tricks.sliding_window_view(
-                    X_train,
-                    window_shape=self.window_size+self.horizon,
-                    axis=0
-                ).transpose(0, 2, 1)
+                X_train,
+                window_shape=self.window_size+self.horizon,
+                axis=0
+            ).transpose(0, 2, 1)
 
             if self.X_test is not None:
                 self.Xw_test = np.lib.stride_tricks.sliding_window_view(
