@@ -28,8 +28,8 @@ class Solver(BaseSolver):
     }
 
     def set_objective(self, X_train, y_test, X_test):
-        self.X_train = X_train
-        self.X_test, self.y_test = X_test, y_test
+        self.X_train = X_train  # (n_samples, n_features)
+        self.X_test, self.y_test = X_test, y_test  # (n_samples, n_features)
         self.n_features = X_train.shape[1]
 
         self.device = torch.device(
@@ -49,6 +49,7 @@ class Solver(BaseSolver):
         self.criterion = torch.nn.MSELoss()
 
         if self.X_train is not None:
+            # (n_windows, window_size+horizon, n_features)
             self.Xw_train = np.lib.stride_tricks.sliding_window_view(
                 X_train,
                 window_shape=self.window_size+self.horizon,
@@ -56,6 +57,7 @@ class Solver(BaseSolver):
             ).transpose(0, 2, 1)
 
         if self.X_test is not None:
+            # (n_windows, window_size+horizon, n_features)
             self.Xw_test = np.lib.stride_tricks.sliding_window_view(
                 X_test,
                 window_shape=self.window_size+self.horizon,
@@ -77,20 +79,19 @@ class Solver(BaseSolver):
             epoch_loss = 0.0
 
             for i in range(0, len(self.Xw_train), self.batch_size):
+                # (batch_size, window_size, n_features)
                 x = torch.tensor(
                     self.Xw_train[i:i+self.batch_size, :self.window_size, :],
-                    dtype=torch.float32
+                    dtype=torch.float32, device=self.device
                 )
+                # (batch_size, horizon, n_features)
                 y = torch.tensor(
                     self.Xw_train[i:i+self.batch_size, :self.horizon, :],
-                    dtype=torch.float32
+                    dtype=torch.float32, device=self.device
                 )
 
-                x = x.to(self.device)
-                y = y.to(self.device)
-
                 self.optimizer.zero_grad()
-                y_pred = self.model(x)
+                y_pred = self.model(x)  # (batch_size, horizon, n_features)
                 loss = self.criterion(y_pred, y)
 
                 loss.backward()
@@ -109,20 +110,21 @@ class Solver(BaseSolver):
         self.model.load_state_dict(best_model)
 
         self.model.eval()
+        # (n_test_windows, horizon, n_features)
         xw_hat = self.model(torch.tensor(
             self.Xw_test[:, :self.window_size, :],
             dtype=torch.float32
         ).to(self.device))
 
-        if self.device == torch.device("cuda"):
+        if xw_hat.is_cuda:
             xw_hat = xw_hat.detach().cpu().numpy()
 
         # Reconstructing the prediction from the predicted windows
         # Creating the prediction array with -1 for the unknown values
         # Corresponding to the first window_size values
-        x_hat = np.zeros_like(self.X_test)-1
+        x_hat = np.zeros_like(self.X_test)-1  # (n_test_samples, n_features)
         x_hat[self.window_size:self.window_size+self.horizon] = xw_hat[0]
-        # x_hat[self.window_size+self.horizon:] = xw_hat[1:, -self.horizon]
+
         x_hat[self.window_size+self.horizon:] = mean_overlaping_pred(
             xw_hat, 1
         )
