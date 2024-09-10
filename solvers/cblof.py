@@ -19,6 +19,7 @@ class Solver(BaseSolver):
         "window": [True],
         "window_size": [20],
         "stride": [1],
+        "n_clusters": [2, 8],
     }
 
     sampling_strategy = "run_once"
@@ -26,7 +27,10 @@ class Solver(BaseSolver):
     def set_objective(self, X_train, y_test, X_test):
         self.X_train = X_train
         self.X_test, self.y_test = X_test, y_test
-        self.clf = CBLOF(contamination=self.contamination, n_clusters=8)
+        self.clf = CBLOF(
+            contamination=self.contamination,
+            n_clusters=self.n_clusters
+        )
 
     def run(self, _):
 
