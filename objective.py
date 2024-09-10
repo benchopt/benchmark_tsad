@@ -36,101 +36,63 @@ class Objective(BaseObjective):
         self.X_test, self.y_test = X_test, y_test
 
     def evaluate_result(self, y_hat):
-        "Evaluate the result provided by the solver."
-
+        """Evaluate the result provided by the solver."""
         to_discard = (y_hat == -1).sum()
         self.y_test = self.y_test[to_discard:]
         y_hat = y_hat[to_discard:]
 
+        result = {}
+        detection_ranges = [1, 3, 5, 10, 20]
+
+        # Standard metrics
         precision = precision_score(self.y_test, y_hat, zero_division=0)
         recall = recall_score(self.y_test, y_hat, zero_division=0)
         f1 = f1_score(self.y_test, y_hat, zero_division=0)
-        zoloss = zero_one_loss(self.y_test, y_hat)
-
-        soft_precision1 = soft_precision_score(
-            self.y_test, y_hat, detection_range=1
-        )
-        soft_recall1 = soft_recall_score(
-            self.y_test, y_hat, detection_range=1
-        )
-        soft_f1_1 = soft_f1_score(soft_precision1, soft_recall1)
-
-        soft_precision3 = soft_precision_score(
-            self.y_test, y_hat, detection_range=3
-        )
-        soft_recall3 = soft_recall_score(
-            self.y_test, y_hat, detection_range=3
-        )
-        soft_f1_3 = soft_f1_score(soft_precision3, soft_recall3)
-
-        soft_precision5 = soft_precision_score(
-            self.y_test, y_hat, detection_range=5
-        )
-        soft_recall5 = soft_recall_score(
-            self.y_test, y_hat, detection_range=5
-        )
-        soft_f1_5 = soft_f1_score(soft_precision5, soft_recall5)
-
-        soft_precision10 = soft_precision_score(
-            self.y_test, y_hat, detection_range=10
-        )
-        soft_recall10 = soft_recall_score(
-            self.y_test, y_hat, detection_range=10
-        )
-        soft_f1_10 = soft_f1_score(soft_precision10, soft_recall10)
-
-        soft_precision20 = soft_precision_score(
-            self.y_test, y_hat, detection_range=20
-        )
-        soft_recall20 = soft_recall_score(
-            self.y_test, y_hat, detection_range=20
-        )
-        soft_f1_20 = soft_f1_score(soft_precision20, soft_recall20)
-
-        anomaly_ranges = extract_anomaly_ranges(self.y_test)
-        prediction_ranges = extract_anomaly_ranges(y_hat)
 
         precision_t = precision_t_score(anomaly_ranges, prediction_ranges)
         recall_t = recall_t_score(anomaly_ranges, prediction_ranges)
         f1_t = f1_t_score(anomaly_ranges, prediction_ranges)
 
-        cct_score = ctt(self.y_test, y_hat)
-        ttc_score = ttc(self.y_test, y_hat)
 
-        return {
+        result.update({
             "precision": precision,
             "recall": recall,
-            "f1": f1,
+            "f1": f1
+        })
 
-            "soft_precision_1": soft_precision1,
-            "soft_recall_1": soft_recall1,
-            "soft_f1_1": soft_f1_1,
+        for range_value in detection_ranges:
+            soft_precision = soft_precision_score(
+                self.y_test, y_hat, detection_range=range_value
+            )
+            soft_recall = soft_recall_score(
+                self.y_test, y_hat, detection_range=range_value
+            )
+            soft_f1 = soft_f1_score(soft_precision, soft_recall)
 
-            "soft_precision_3": soft_precision3,
-            "soft_recall_3": soft_recall3,
-            "soft_f1_3": soft_f1_3,
+            result.update({
+                f"soft_precision_{range_value}": soft_precision,
+                f"soft_recall_{range_value}": soft_recall,
+                f"soft_f1_{range_value}": soft_f1
+            })
 
-            "soft_precision_5": soft_precision5,
-            "soft_recall_5": soft_recall5,
-            "soft_f1_5": soft_f1_5,
+        zoloss = zero_one_loss(self.y_test, y_hat)
 
-            "soft_precision_10": soft_precision10,
-            "soft_recall_10": soft_recall10,
-            "soft_f1_10": soft_f1_10,
-
-            "soft_precision_20": soft_precision20,
-            "soft_recall_20": soft_recall20,
-            "soft_f1_20": soft_f1_20,
-
+        # Other metrics
+        cct_score = ctt(self.y_test, y_hat)
+        ttc_score = ttc(self.y_test, y_hat)
+        
+        # Add remaining metrics to the result dictionary
+        result.update({
             "precision_t": precision_t,
             "recall_t": recall_t,
-            "f1_t": f1_t,
-
+            "f1_t": f1_t
             "cct": cct_score,
             "ttc": ttc_score,
             "zoloss": zoloss,
-            "value": zoloss,  # having zoloss twice because of the API
-        }
+            "value": zoloss  # having zoloss twice for the API
+        })
+
+        return result
 
     def get_objective(self):
         return dict(
