@@ -3,7 +3,11 @@ from benchmark_utils.metrics import (
     soft_precision as soft_precision_score,
     soft_recall as soft_recall_score,
     soft_f1 as soft_f1_score,
-    ctt, ttc
+    ctt, ttc,
+    extract_anomaly_ranges,
+    precision_t as precision_t_score,
+    recall_t as recall_t_score,
+    f1_t as f1_t_score
 )
 
 with safe_import_context() as import_ctx:
@@ -45,6 +49,13 @@ class Objective(BaseObjective):
         recall = recall_score(self.y_test, y_hat, zero_division=0)
         f1 = f1_score(self.y_test, y_hat, zero_division=0)
 
+        anomaly_ranges = extract_anomaly_ranges(self.y_test)
+        prediction_ranges = extract_anomaly_ranges(y_hat)
+
+        precision_t = precision_t_score(anomaly_ranges, prediction_ranges)
+        recall_t = recall_t_score(anomaly_ranges, prediction_ranges)
+        f1_t = f1_t_score(anomaly_ranges, prediction_ranges)
+
         result.update({
             "precision": precision,
             "recall": recall,
@@ -74,10 +85,13 @@ class Objective(BaseObjective):
 
         # Add remaining metrics to the result dictionary
         result.update({
+            "precision_t": precision_t,
+            "recall_t": recall_t,
+            "f1_t": f1_t,
             "cct": cct_score,
             "ttc": ttc_score,
             "zoloss": zoloss,
-            "value": zoloss  # having zoloss twice because of the API
+            "value": zoloss  # having zoloss twice for the API
         })
 
         return result
