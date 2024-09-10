@@ -13,7 +13,7 @@ class Solver(BaseSolver):
     name = "LSTM"
 
     install_cmd = "conda"
-    requirements = ["pip::torch", "tqdm"]
+    requirements = ["pip:torch", "tqdm"]
 
     sampling_strategy = "run_once"
 
