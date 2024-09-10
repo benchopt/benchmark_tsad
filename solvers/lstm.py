@@ -9,36 +9,6 @@ with safe_import_context() as import_ctx:
     from tqdm import tqdm
 
 
-class LSTM_Autoencoder(torch.nn.Module):
-    def __init__(self,
-                 seq_len,
-                 n_features, embedding_dim=64, enc_layers=1, dec_layers=1,):
-        super(LSTM_Autoencoder, self).__init__()
-        self.seq_len, self.n_features = seq_len, n_features
-        self.embedding_dim, self.hidden_dim = embedding_dim, 2 * embedding_dim
-
-        self.encoder = torch.nn.LSTM(
-            input_size=n_features,
-            hidden_size=self.hidden_dim,
-            num_layers=enc_layers,
-            batch_first=True
-        )
-
-        self.decoder = torch.nn.LSTM(
-            input_size=self.hidden_dim,
-            hidden_size=n_features,
-            num_layers=dec_layers,
-            batch_first=True
-        )
-
-    def forward(self, x):
-
-        x, (_, _) = self.encoder(x)
-        x, (_, _) = self.decoder(x)
-
-        return x
-
-
 class Solver(BaseSolver):
     name = "LSTM"
 
@@ -67,6 +37,40 @@ class Solver(BaseSolver):
             for d in data)
 
     def set_objective(self, X_train, y_test, X_test):
+        class LSTM_Autoencoder(torch.nn.Module):
+            def __init__(self,
+                         seq_len,
+                         n_features,
+                         embedding_dim=64,
+                         enc_layers=1,
+                         dec_layers=1,
+                         ):
+                super(LSTM_Autoencoder, self).__init__()
+                self.seq_len, self.n_features = seq_len, n_features
+                self.embedding_dim = embedding_dim
+                self.hidden_dim = 2 * embedding_dim
+
+                self.encoder = torch.nn.LSTM(
+                    input_size=n_features,
+                    hidden_size=self.hidden_dim,
+                    num_layers=enc_layers,
+                    batch_first=True
+                )
+
+                self.decoder = torch.nn.LSTM(
+                    input_size=self.hidden_dim,
+                    hidden_size=n_features,
+                    num_layers=dec_layers,
+                    batch_first=True
+                )
+
+            def forward(self, x):
+
+                x, (_, _) = self.encoder(x)
+                x, (_, _) = self.decoder(x)
+
+                return x
+
         self.X_train = X_train
         self.X_test, self.y_test = X_test, y_test
         self.n_features = X_train.shape[1]
@@ -74,7 +78,7 @@ class Solver(BaseSolver):
 
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu"
-            )
+        )
 
         self.model = LSTM_Autoencoder(
             self.seq_len,
@@ -174,7 +178,8 @@ class Solver(BaseSolver):
         )
 
     def skip(self, X_train, X_test, y_test):
-        if self.device != torch.device("cuda"):
+        from benchopt.utils.sys_info import get_cuda_version
+        if get_cuda_version() is None:
             return True, "CUDA is not available. Skipping this solver."
         elif X_train.shape[0] < self.window_size:
             return True, "Not enough samples to create a window."
