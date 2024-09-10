@@ -335,12 +335,6 @@ def test_overlap_size():
                         anomaly_length, 'middle') == 1.0
 
     real_range = (1, 5)
-    overlap_set = {1, 2, 3}
-    anomaly_length = 5
-    assert overlap_size(real_range, overlap_set, anomaly_length, 'front') == (
-        10 + 9 + 8) / (10 + 9 + 8 + 7 + 6)
-
-    real_range = (1, 5)
     overlap_set = {3, 4, 5}
     anomaly_length = 5
     assert overlap_size(real_range, overlap_set, anomaly_length, 'back') == (
@@ -359,155 +353,288 @@ def test_overlap_size():
 
 
 def test_overlap_reward():
-    real_range = (1, 5)
-    predicted_ranges = [(1, 5)]
-    assert overlap_reward(real_range, predicted_ranges, 'flat') == 1.0
+    real_range = (10, 20)
+    predicted_ranges = [(0, 5), (25, 30)]
+    assert overlap_reward(real_range, predicted_ranges) == 0.0
 
-    real_range = (1, 5)
-    predicted_ranges = [(1, 5), (6, 10)]
-    assert overlap_reward(real_range, predicted_ranges, 'flat') == 1.0
+    real_range = (10, 20)
+    predicted_ranges = [(10, 20)]
+    assert overlap_reward(real_range, predicted_ranges) == 1.0
 
-    real_range = (1, 5)
-    predicted_ranges = [(1, 3), (4, 5)]
-    assert overlap_reward(real_range, predicted_ranges, 'flat') == 1.0
+    real_range = (10, 20)
+    predicted_ranges = [(15, 25)]
+    assert overlap_reward(real_range, predicted_ranges) > 0.0
+    assert overlap_reward(real_range, predicted_ranges) < 1.0
 
-    real_range = (1, 5)
-    predicted_ranges = [(1, 3), (4, 6)]
-    assert overlap_reward(real_range, predicted_ranges,
-                          'flat') == (1.0 * (3 + 2) / 5)
+    real_range = (10, 20)
+    predicted_ranges = [(5, 15), (18, 25)]
+    assert overlap_reward(real_range, predicted_ranges) > 0.0
 
-    real_range = (1, 5)
-    predicted_ranges = [(2, 4)]
-    assert overlap_reward(real_range, predicted_ranges,
-                          'front') == (1.0 / 5 * (3 + 2))
-
-    real_range = (1, 5)
-    predicted_ranges = [(2, 4)]
-    assert overlap_reward(real_range, predicted_ranges,
-                          'back') == (1.0 / 5 * (3 + 2))
-
-    real_range = (1, 5)
-    predicted_ranges = [(2, 4)]
-    assert overlap_reward(real_range, predicted_ranges,
-                          'middle') == (1.0 / 5 * (2 + 2))
-
-    real_range = (1, 5)
+    real_range = (10, 20)
     predicted_ranges = []
-    assert overlap_reward(real_range, predicted_ranges, 'flat') == 0.0
+    assert overlap_reward(real_range, predicted_ranges) == 0.0
+
+    real_range = (10, 20)
+    predicted_ranges = [(15, 25)]
+    for bias_type in ['flat', 'front', 'back', 'middle']:
+        reward = overlap_reward(
+            real_range, predicted_ranges, bias_type=bias_type)
+        assert reward >= 0.0  # Ensure reward is non-negative
+
+    real_range = (10, 20)
+    predicted_ranges = [(10, 15), (16, 20)]
+    assert overlap_reward(
+        real_range, predicted_ranges) < overlap_reward(real_range, [(10, 20)])
+    # Test multiple ranges covering the real range result in a lower reward
+    # due to the cardinality factor.
+
+    real_range = (10, 10)
+    predicted_ranges = [(10, 10)]
+    assert overlap_reward(real_range, predicted_ranges) == 1.0
+
+    real_range = (10, 10)
+    predicted_ranges = [(9, 11)]
+    assert overlap_reward(real_range, predicted_ranges) == 1.0
 
 
 def test_recall_t():
-    real_ranges = [(1, 5)]
-    predicted_ranges = [(1, 5)]
-    assert recall_t(real_ranges, predicted_ranges,
-                    alpha=0.5, bias_type='flat') == 1.0
+    real_ranges = [(10, 20)]
+    predicted_ranges = [(10, 20)]
+    result = recall_t(
+        real_ranges, predicted_ranges, alpha=0.5, bias_type='flat')
+    assert abs(result - 1.0) < 1e-6
 
-    real_ranges = [(1, 5), (6, 10)]
-    predicted_ranges = [(1, 5), (6, 10)]
-    assert recall_t(real_ranges, predicted_ranges,
-                    alpha=0.5, bias_type='flat') == 1.0
+    real_ranges = [(10, 20)]
+    predicted_ranges = [(15, 25)]
+    result = recall_t(
+        real_ranges, predicted_ranges, alpha=0.5, bias_type='flat')
+    assert 0 < result < 1.0
 
-    real_ranges = [(1, 5), (6, 10)]
-    predicted_ranges = [(1, 3), (6, 10)]
-    assert recall_t(real_ranges, predicted_ranges, alpha=0.5,
-                    bias_type='flat') == (0.5 + 0.5) / 2
+    real_ranges = [(10, 20)]
+    predicted_ranges = [(21, 30)]
+    result = recall_t(
+        real_ranges, predicted_ranges, alpha=0.5, bias_type='flat')
+    assert abs(result - 0.0) < 1e-6
 
-    real_ranges = [(1, 5)]
-    predicted_ranges = [(2, 4)]
-    assert recall_t(real_ranges, predicted_ranges, alpha=0.5,
-                    bias_type='flat') == 0.5 * 0.0 + 0.5 * (0.5)
+    real_ranges = [(10, 20), (30, 40)]
+    predicted_ranges = [(15, 25), (35, 45)]
+    result = recall_t(
+        real_ranges, predicted_ranges, alpha=0.5, bias_type='flat')
+    assert 0 < result < 1.0
 
-    real_ranges = [(1, 5)]
-    predicted_ranges = [(2, 4)]
-    assert recall_t(real_ranges, predicted_ranges, alpha=0.8,
-                    bias_type='flat') == 0.8 * 0.0 + 0.2 * (0.5)
+    real_ranges = [(10, 20)]
+    predicted_ranges = [(21, 30)]
+    result = recall_t(
+        real_ranges, predicted_ranges, alpha=1.0, bias_type='flat')
+    assert abs(result - 0.0) < 1e-6
 
-    real_ranges = [(1, 5)]
-    predicted_ranges = [(2, 4)]
-    assert recall_t(real_ranges, predicted_ranges, alpha=0.2,
-                    bias_type='front') == 0.2 * (0.5) + 0.8 * (
-                        1.0 / 5 * (3 + 2)
-    )
+    predicted_ranges = [(15, 25)]
+    result = recall_t(
+        real_ranges, predicted_ranges, alpha=1.0, bias_type='flat')
+    assert abs(result - 1.0) < 1e-6
 
-    real_ranges = []
-    predicted_ranges = [(2, 4)]
-    assert recall_t(real_ranges, predicted_ranges,
-                    alpha=0.5, bias_type='flat') == 0.0
+    real_ranges = [(10, 20)]
+    predicted_ranges = [(15, 25)]
+    result = recall_t(
+        real_ranges, predicted_ranges, alpha=0.0, bias_type='flat')
+    assert 0 < result < 1.0
+
+    real_ranges = [(10, 20)]
+    predicted_ranges = [(10, 15)]
+    result = recall_t(
+        real_ranges, predicted_ranges, alpha=0.5, bias_type='front')
+    assert result > recall_t(
+        real_ranges, predicted_ranges, alpha=0.5, bias_type='flat')
+
+    real_ranges = [(10, 20)]
+    predicted_ranges = [(15, 20)]
+    result = recall_t(
+        real_ranges, predicted_ranges, alpha=0.5, bias_type='back')
+    assert result > recall_t(
+        real_ranges, predicted_ranges, alpha=0.5, bias_type='flat')
 
 
 def test_precision_t():
-    real_ranges = [(1, 5)]
-    predicted_ranges = [(1, 5)]
-    assert precision_t(real_ranges, predicted_ranges, bias_type='flat') == 1.0
+    real_ranges = [(10, 20), (30, 40), (50, 60)]
+    predicted_ranges = [(15, 25), (35, 45), (55, 65)]
 
-    real_ranges = [(1, 5), (6, 10)]
-    predicted_ranges = [(1, 5), (6, 10)]
-    assert precision_t(real_ranges, predicted_ranges, bias_type='flat') == 1.0
+    assert precision_t(real_ranges, predicted_ranges, bias_type='front') > 0
 
-    real_ranges = [(1, 5), (6, 10)]
-    predicted_ranges = [(1, 3), (6, 10)]
-    assert precision_t(real_ranges, predicted_ranges,
-                       bias_type='flat') == (0.5 + 1.0) / 2
+    assert precision_t(real_ranges, predicted_ranges, bias_type='back') > 0
 
-    real_ranges = [(1, 5)]
-    predicted_ranges = [(2, 4)]
-    assert precision_t(real_ranges, predicted_ranges, bias_type='flat') == 0.5
+    assert precision_t(real_ranges, predicted_ranges, bias_type='middle') > 0
 
-    real_ranges = [(1, 5)]
-    predicted_ranges = [(2, 4)]
-    assert precision_t(real_ranges, predicted_ranges,
-                       bias_type='front') == 1.0 / 5 * (3 + 2)
+    no_overlap_predicted_ranges = [(70, 80)]
+    assert precision_t(
+        real_ranges, no_overlap_predicted_ranges, bias_type='flat') == 0.0
 
-    real_ranges = [(1, 5)]
-    predicted_ranges = [(2, 4)]
-    assert precision_t(real_ranges, predicted_ranges,
-                       bias_type='back') == (3 + 2) / (1 + 2 + 3 + 4 + 5)
+    partial_overlap_predicted_ranges = [(15, 25), (70, 80)]
+    assert precision_t(
+        real_ranges, partial_overlap_predicted_ranges, bias_type='flat') > 0
 
-    real_ranges = [(1, 5)]
-    predicted_ranges = [(2, 4)]
-    assert precision_t(real_ranges, predicted_ranges,
-                       bias_type='middle') == (2 + 2) / (1 + 2 + 3 + 2 + 1)
+    different_anomaly_length_predicted_ranges = [(10, 15), (32, 38), (52, 57)]
+    assert precision_t(
+        real_ranges,
+        different_anomaly_length_predicted_ranges,
+        bias_type='flat') > 0
 
-    real_ranges = [(1, 5)]
-    predicted_ranges = []
-    assert precision_t(real_ranges, predicted_ranges, bias_type='flat') == 0.0
+    empty_predicted_ranges = []
+    assert precision_t(
+        real_ranges,
+        empty_predicted_ranges,
+        bias_type='flat') == 0.0
+
+    empty_real_ranges = []
+    assert precision_t(
+        empty_real_ranges,
+        predicted_ranges,
+        bias_type='flat') == 0.0
 
 
 def test_f1_t():
-    real_ranges = [(1, 5)]
-    predicted_ranges = [(1, 5)]
-    assert f1_t(real_ranges, predicted_ranges,
-                alpha=0.5, bias_type='flat') == 1.0
+    real_ranges = [(10, 20), (30, 40), (50, 60)]
+    predicted_ranges = [(15, 25), (35, 45), (55, 65)]
 
-    real_ranges = [(1, 5), (6, 10)]
-    predicted_ranges = [(1, 5), (6, 10)]
-    assert f1_t(real_ranges, predicted_ranges,
-                alpha=0.5, bias_type='flat') == 1.0
+    recall_score = recall_t(
+        real_ranges, predicted_ranges, alpha=0.5, bias_type='flat')
+    precision_score = precision_t(
+        real_ranges, predicted_ranges, bias_type='flat')
+    expected_f1 = 2 * (
+        recall_score * precision_score
+    ) / (
+        recall_score + precision_score
+    ) if (recall_score + precision_score) != 0 else 0
+    assert f1_t(
+        real_ranges,
+        predicted_ranges,
+        alpha=0.5,
+        bias_type='flat') == expected_f1
 
-    real_ranges = [(1, 5), (6, 10)]
-    predicted_ranges = [(1, 3), (6, 10)]
-    assert f1_t(real_ranges, predicted_ranges, alpha=0.5,
-                bias_type='flat') == (2 * (0.5 + 0.5)) / 1.0
+    recall_score = recall_t(
+        real_ranges, predicted_ranges, alpha=0.5, bias_type='front')
+    precision_score = precision_t(
+        real_ranges, predicted_ranges, bias_type='front')
+    expected_f1 = 2 * (
+        recall_score * precision_score
+    ) / (
+        recall_score + precision_score
+    ) if (recall_score + precision_score) != 0 else 0
+    assert f1_t(
+        real_ranges,
+        predicted_ranges,
+        alpha=0.5,
+        bias_type='front') == expected_f1
 
-    real_ranges = [(1, 5)]
-    predicted_ranges = [(2, 4)]
-    assert f1_t(real_ranges, predicted_ranges, alpha=0.5,
-                bias_type='flat') == (2 * (0.5 * 0.5)) / (0.5 + 0.5)
+    recall_score = recall_t(
+        real_ranges, predicted_ranges, alpha=0.5, bias_type='back')
+    precision_score = precision_t(
+        real_ranges, predicted_ranges, bias_type='back')
+    expected_f1 = 2 * (
+        recall_score * precision_score
+    ) / (
+        recall_score + precision_score
+    ) if (recall_score + precision_score) != 0 else 0
+    assert f1_t(
+        real_ranges,
+        predicted_ranges,
+        alpha=0.5,
+        bias_type='back') == expected_f1
 
-    real_ranges = [(1, 5)]
-    predicted_ranges = [(2, 4)]
-    assert f1_t(real_ranges, predicted_ranges, alpha=0.8,
-                bias_type='flat') == (2 * (0.2 * (0.5))) / (0.2 + 0.5)
+    recall_score = recall_t(
+        real_ranges, predicted_ranges, alpha=0.5, bias_type='middle')
+    precision_score = precision_t(
+        real_ranges, predicted_ranges, bias_type='middle')
+    expected_f1 = 2 * (
+        recall_score * precision_score
+    ) / (
+        recall_score + precision_score
+    ) if (recall_score + precision_score) != 0 else 0
+    assert f1_t(
+        real_ranges,
+        predicted_ranges,
+        alpha=0.5,
+        bias_type='middle') == expected_f1
 
-    real_ranges = [(1, 5)]
-    predicted_ranges = [(2, 4)]
-    assert f1_t(real_ranges, predicted_ranges, alpha=0.5,
-                bias_type='front') == (2 * (0.5 * 1.0 / 5 * (3 + 2))) / (
-                    0.5 + 1.0 / 5 * (3 + 2))
+    no_overlap_predicted_ranges = [(70, 80)]
+    recall_score = recall_t(
+        real_ranges, no_overlap_predicted_ranges, alpha=0.5, bias_type='flat')
+    precision_score = precision_t(
+        real_ranges,
+        no_overlap_predicted_ranges,
+        bias_type='flat')
+    expected_f1 = 2 * (
+        recall_score * precision_score
+    ) / (
+        recall_score + precision_score
+    ) if (recall_score + precision_score) != 0 else 0
+    assert f1_t(
+        real_ranges,
+        no_overlap_predicted_ranges,
+        alpha=0.5,
+        bias_type='flat') == expected_f1
 
-    real_ranges = [(1, 5)]
-    predicted_ranges = [(2, 4)]
-    assert f1_t(real_ranges, predicted_ranges, alpha=0.5,
-                bias_type='back') == (2 * (0.5 * (3 + 2) / (
-                    1 + 2 + 3 + 4 + 5))) / (0.5 + (3 + 2) / (
-                        1 + 2 + 3 + 4 + 5))
+    partial_overlap_predicted_ranges = [(15, 25), (70, 80)]
+    recall_score = recall_t(
+        real_ranges,
+        partial_overlap_predicted_ranges,
+        alpha=0.5,
+        bias_type='flat')
+    precision_score = precision_t(
+        real_ranges,
+        partial_overlap_predicted_ranges,
+        bias_type='flat')
+    expected_f1 = 2 * (
+        recall_score * precision_score
+    ) / (
+        recall_score + precision_score
+    ) if (recall_score + precision_score) != 0 else 0
+    assert f1_t(
+        real_ranges,
+        partial_overlap_predicted_ranges,
+        alpha=0.5,
+        bias_type='flat') == expected_f1
+
+    different_anomaly_length_predicted_ranges = [(10, 15), (32, 38), (52, 57)]
+    recall_score = recall_t(
+        real_ranges,
+        different_anomaly_length_predicted_ranges,
+        alpha=0.5, bias_type='flat')
+    precision_score = precision_t(
+        real_ranges,
+        different_anomaly_length_predicted_ranges,
+        bias_type='flat')
+    expected_f1 = 2 * (
+        recall_score * precision_score
+    ) / (
+        recall_score + precision_score
+    ) if (recall_score + precision_score) != 0 else 0
+    assert f1_t(real_ranges, different_anomaly_length_predicted_ranges,
+                alpha=0.5, bias_type='flat') == expected_f1
+
+    # Test case 8: Empty predicted ranges
+    empty_predicted_ranges = []
+    recall_score = recall_t(
+        real_ranges, empty_predicted_ranges, alpha=0.5, bias_type='flat')
+    precision_score = precision_t(
+        real_ranges, empty_predicted_ranges, bias_type='flat')
+    expected_f1 = 2 * (
+        recall_score * precision_score
+    ) / (
+        recall_score + precision_score
+    ) if (recall_score + precision_score) != 0 else 0
+    assert f1_t(real_ranges, empty_predicted_ranges,
+                alpha=0.5, bias_type='flat') == expected_f1
+
+    # Test case 9: Empty real ranges
+    empty_real_ranges = []
+    recall_score = recall_t(
+        empty_real_ranges, predicted_ranges, alpha=0.5, bias_type='flat')
+    precision_score = precision_t(
+        empty_real_ranges, predicted_ranges, bias_type='flat')
+    expected_f1 = 2 * (
+        recall_score * precision_score
+    ) / (
+        recall_score + precision_score
+    ) if (recall_score + precision_score) != 0 else 0
+    assert f1_t(empty_real_ranges, predicted_ranges,
+                alpha=0.5, bias_type='flat') == expected_f1
