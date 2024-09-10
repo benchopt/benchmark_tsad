@@ -49,10 +49,12 @@ class Objective(BaseObjective):
         recall = recall_score(self.y_test, y_hat, zero_division=0)
         f1 = f1_score(self.y_test, y_hat, zero_division=0)
 
+        anomaly_ranges = extract_anomaly_ranges(self.y_test)
+        prediction_ranges = extract_anomaly_ranges(y_hat)
+
         precision_t = precision_t_score(anomaly_ranges, prediction_ranges)
         recall_t = recall_t_score(anomaly_ranges, prediction_ranges)
         f1_t = f1_t_score(anomaly_ranges, prediction_ranges)
-
 
         result.update({
             "precision": precision,
@@ -80,12 +82,12 @@ class Objective(BaseObjective):
         # Other metrics
         cct_score = ctt(self.y_test, y_hat)
         ttc_score = ttc(self.y_test, y_hat)
-        
+
         # Add remaining metrics to the result dictionary
         result.update({
             "precision_t": precision_t,
             "recall_t": recall_t,
-            "f1_t": f1_t
+            "f1_t": f1_t,
             "cct": cct_score,
             "ttc": ttc_score,
             "zoloss": zoloss,
