@@ -9,9 +9,7 @@ with safe_import_context() as import_ctx:
     import numpy as np
 
 
-def mean_overlaping_pred(
-        self, predictions, stride
-):
+def mean_overlaping_pred(predictions, stride):
     """
     Averages overlapping predictions for multivariate time series.
 
