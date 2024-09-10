@@ -28,6 +28,34 @@ class Solver(BaseSolver):
     }
 
     def set_objective(self, X_train, y_test, X_test):
+
+        class AR_model(torch.nn.Module):
+            """
+            Single linear layer for autoregressive model
+            Taking in input a window of size window_size and
+            outputting a window of size horizon
+            input : (batch_size, window_size, n_features)
+            output : (batch_size, horizon, n_features)
+            """
+
+            def __init__(self,
+                         window_size: int,
+                         n_features: int,
+                         horizon: int):
+                super(Solver.AR_model, self).__init__()
+                self.window_size = window_size
+                self.n_features = n_features
+                self.horizon = horizon
+                self.linear = torch.nn.Linear(
+                    window_size * n_features, horizon * n_features
+                    )
+
+            def forward(self, x):
+                x = x.reshape(x.size(0), -1)
+                x = self.linear(x)
+                x = x.reshape(x.size(0), -1, self.n_features)
+                return x
+
         self.X_train = X_train  # (n_samples, n_features)
         self.X_test, self.y_test = X_test, y_test  # (n_samples, n_features)
         self.n_features = X_train.shape[1]
@@ -151,27 +179,3 @@ class Solver(BaseSolver):
 
     def get_result(self):
         return dict(y_hat=self.predictions)
-
-    class AR_model(torch.nn.Module):
-        """
-        Single linear layer for autoregressive model
-        Taking in input a window of size window_size and
-        outputting a window of size horizon
-        input : (batch_size, window_size, n_features)
-        output : (batch_size, horizon, n_features)
-        """
-
-        def __init__(self, window_size: int, n_features: int, horizon: int):
-            super(Solver.AR_model, self).__init__()
-            self.window_size = window_size
-            self.n_features = n_features
-            self.horizon = horizon
-            self.linear = torch.nn.Linear(
-                window_size * n_features, horizon * n_features
-                )
-
-        def forward(self, x):
-            x = x.reshape(x.size(0), -1)
-            x = self.linear(x)
-            x = x.reshape(x.size(0), -1, self.n_features)
-            return x
