@@ -42,7 +42,7 @@ class Solver(BaseSolver):
                          window_size: int,
                          n_features: int,
                          horizon: int):
-                super(Solver.AR_model, self).__init__()
+                super(AR_model, self).__init__()
                 self.window_size = window_size
                 self.n_features = n_features
                 self.horizon = horizon
@@ -64,7 +64,7 @@ class Solver(BaseSolver):
             "cuda" if torch.cuda.is_available() else "cpu"
             )
 
-        self.model = Solver.AR_model(
+        self.model = AR_model(
             self.window_size,
             self.n_features,
             self.horizon
