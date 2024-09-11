@@ -144,10 +144,7 @@ class Solver(BaseSolver):
             dtype=torch.float32
         ).to(self.device))
 
-        if xw_hat.is_cuda:
-            xw_hat = xw_hat.detach().cpu().numpy()
-        else:
-            xw_hat = xw_hat.detach().numpy()
+        xw_hat = xw_hat.detach().cpu().numpy()
 
         # Reconstructing the prediction from the predicted windows
         # Creating the prediction array with -1 for the unknown values

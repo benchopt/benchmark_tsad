@@ -1,7 +1,6 @@
 from benchopt import BaseDataset, safe_import_context, config
 
 with safe_import_context() as import_ctx:
-    import pathlib
     import numpy as np
     import requests
 
@@ -35,7 +34,7 @@ class Dataset(BaseDataset):
     def get_data(self):
         path = config.get_data_path(key="MSL")
         # Check if the data is already here
-        if not pathlib.Path.exists(path):
+        if not path.exists():
             path.mkdir(parents=True, exist_ok=True)
 
             response = requests.get(URL_XTRAIN)

@@ -3,7 +3,6 @@ from benchopt import BaseDataset, safe_import_context, config
 with safe_import_context() as import_ctx:
     import requests
     import pandas as pd
-    import pathlib
 
 URL_XTRAIN = (
     "https://drive.google.com/uc?&id=1d3tAbYTj0CZLhB7z3IDTfTRg3E7qj_tw"
@@ -30,7 +29,7 @@ class Dataset(BaseDataset):
     def get_data(self):
         path = config.get_data_path(key="PSM")
         # Check if the data is already here
-        if not pathlib.Path.exists(path):
+        if not path.exists():
             path.mkdir(parents=True, exist_ok=True)
 
             response = requests.get(URL_XTRAIN)
