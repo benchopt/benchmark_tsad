@@ -1,7 +1,6 @@
 from benchopt import BaseDataset, safe_import_context, config
 
 with safe_import_context() as import_ctx:
-    import pathlib
     import numpy as np
     import requests
     # from sklearn.model_selection import TimeSeriesSplit
@@ -36,18 +35,19 @@ class Dataset(BaseDataset):
         path = config.get_data_path(key="SMAP")
 
         # Check if the data is already here
-        if not pathlib.Path.exists(path):
+        if not path.exists():
+            path.mkdir(parents=True, exist_ok=True)
 
             response = requests.get(URL_XTRAIN)
-            with open(pathlib.Path(path) / "SMAP_train.npy", "wb") as f:
+            with open(path / "SMAP_train.npy", "wb") as f:
                 f.write(response.content)
 
             response = requests.get(URL_XTEST)
-            with open(pathlib.Path(path) / "SMAP_test.npy", "wb") as f:
+            with open(path / "SMAP_test.npy", "wb") as f:
                 f.write(response.content)
 
             response = requests.get(URL_YTEST)
-            with open(pathlib.Path(path) / "SMAP_test_label.npy", "wb") as f:
+            with open(path / "SMAP_test_label.npy", "wb") as f:
                 f.write(response.content)
 
         X_train = np.load(path / "SMAP_train.npy")
