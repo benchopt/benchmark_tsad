@@ -1,35 +1,13 @@
 # AR model
 from benchopt import BaseSolver, safe_import_context
 from benchmark_utils import mean_overlaping_pred
+from benchmark_utils.models import AR_model
 
 with safe_import_context() as import_ctx:
     import torch
     from torch import optim, nn
     import numpy as np
     from tqdm import tqdm
-
-
-class AR_model(nn.Module):
-    """
-    Single linear layer for autoregressive model
-    Taking in input a window of size window_size and
-    outputting a window of size horizon
-    input : (batch_size, window_size, n_features)
-    output : (batch_size, horizon, n_features)
-    """
-
-    def __init__(self, window_size: int, n_features: int, horizon: int):
-        super(AR_model, self).__init__()
-        self.window_size = window_size
-        self.n_features = n_features
-        self.horizon = horizon
-        self.linear = nn.Linear(window_size * n_features, horizon * n_features)
-
-    def forward(self, x):
-        x = x.reshape(x.size(0), -1)
-        x = self.linear(x)
-        x = x.reshape(x.size(0), -1, self.n_features)
-        return x
 
 
 class Solver(BaseSolver):
@@ -137,8 +115,7 @@ class Solver(BaseSolver):
             dtype=torch.float32
         ).to(self.device))
 
-        if xw_hat.is_cuda:
-            xw_hat = xw_hat.detach().cpu().numpy()
+        xw_hat = xw_hat.detach().cpu().numpy()
 
         # Reconstructing the prediction from the predicted windows
         # Creating the prediction array with -1 for the unknown values

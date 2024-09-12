@@ -1,6 +1,7 @@
 # Vanilla Transformer
 from benchopt import BaseSolver, safe_import_context
 from benchmark_utils import mean_overlaping_pred
+from benchmark_utils.models import TransformerModel
 
 with safe_import_context() as import_ctx:
     import torch
@@ -10,60 +11,13 @@ with safe_import_context() as import_ctx:
     from tqdm import tqdm
 
 
-class TransformerModel(nn.Module):
-    def __init__(self,
-                 input_size,
-                 sequence_length,
-                 num_layers=1,
-                 horizon=1,
-                 num_heads=2,
-                 dim_feedforward=512,
-                 ):
-        super(TransformerModel, self).__init__()
-        self.sequence_length = sequence_length
-        self.input_size = input_size
-        self.horizon = horizon
-
-        # Ensure d_model is divisible by num_heads
-        self.d_model = ((input_size - 1) // num_heads + 1) * num_heads
-
-        self.input_projection = nn.Linear(input_size, self.d_model)
-
-        self.encoder_layer = nn.TransformerEncoderLayer(
-            d_model=self.d_model,
-            nhead=num_heads,
-            dim_feedforward=dim_feedforward
-        )
-        self.transformer_encoder = nn.TransformerEncoder(
-            self.encoder_layer,
-            num_layers=num_layers
-        )
-        self.fc_out = nn.Linear(
-            self.d_model * sequence_length, horizon * input_size)
-
-    def forward(self, src):
-        # src shape: (batch_size, sequence_length, input_size)
-        src = self.input_projection(src)  # Project to d_model
-        src = src.transpose(0, 1)  # (sequence_length, batch_size, d_model)
-
-        output = self.transformer_encoder(src)
-        # (batch_size, sequence_length, d_model)
-        output = output.transpose(0, 1)
-        output = output.flatten(1)  # (batch_size, sequence_length * d_model)
-        output = self.fc_out(output)
-        # (batch_size, horizon, input_size)
-        output = output.view(-1, self.horizon, self.input_size)
-
-        return output
-
-
 class Solver(BaseSolver):
     name = "Transformer"
 
     install_cmd = "conda"
     requirements = ["pip:torch", "tqdm"]
 
-    device = torch.device("cuda:2" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     sampling_strategy = "run_once"
 
@@ -98,7 +52,7 @@ class Solver(BaseSolver):
         self.criterion = nn.MSELoss()
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.lr)
         self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(
-            self.optimizer, mode='min', factor=0.5, patience=5, verbose=True
+            self.optimizer, mode='min', factor=0.5, patience=5
         )
 
         if self.window:

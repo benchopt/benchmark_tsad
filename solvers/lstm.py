@@ -1,5 +1,6 @@
 # LSTM Autoencoder
 from benchopt import BaseSolver, safe_import_context
+from benchmark_utils.models import LSTM_Autoencoder
 
 with safe_import_context() as import_ctx:
     import torch
@@ -8,36 +9,6 @@ with safe_import_context() as import_ctx:
     import numpy as np
     from torch.utils.data import DataLoader
     from tqdm import tqdm
-
-
-class LSTM_Autoencoder(nn.Module):
-    def __init__(self,
-                 seq_len,
-                 n_features, embedding_dim=64, enc_layers=1, dec_layers=1,):
-        super(LSTM_Autoencoder, self).__init__()
-        self.seq_len, self.n_features = seq_len, n_features
-        self.embedding_dim, self.hidden_dim = embedding_dim, 2 * embedding_dim
-
-        self.encoder = nn.LSTM(
-            input_size=n_features,
-            hidden_size=self.hidden_dim,
-            num_layers=enc_layers,
-            batch_first=True
-        )
-
-        self.decoder = nn.LSTM(
-            input_size=self.hidden_dim,
-            hidden_size=n_features,
-            num_layers=dec_layers,
-            batch_first=True
-        )
-
-    def forward(self, x):
-
-        x, (_, _) = self.encoder(x)
-        x, (_, _) = self.decoder(x)
-
-        return x
 
 
 class Solver(BaseSolver):
