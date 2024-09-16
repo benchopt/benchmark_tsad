@@ -1,5 +1,6 @@
 # LSTM Autoencoder
 from benchopt import BaseSolver, safe_import_context
+from benchmark_utils.models import LSTM_Autoencoder
 
 with safe_import_context() as import_ctx:
     import torch

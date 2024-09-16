@@ -1,6 +1,7 @@
 # Vanilla Transformer
 from benchopt import BaseSolver, safe_import_context
 from benchmark_utils import mean_overlaping_pred
+from benchmark_utils.models import TransformerModel
 
 with safe_import_context() as import_ctx:
     import torch
@@ -14,6 +15,7 @@ class Solver(BaseSolver):
 
     install_cmd = "conda"
     requirements = ["pip:torch", "tqdm"]
+
 
     sampling_strategy = "run_once"
 
@@ -101,7 +103,7 @@ class Solver(BaseSolver):
         self.criterion = torch.nn.MSELoss()
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.lr)
         self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(
-            self.optimizer, mode='min', factor=0.5, patience=5, verbose=True
+            self.optimizer, mode='min', factor=0.5, patience=5
         )
 
         if self.window:

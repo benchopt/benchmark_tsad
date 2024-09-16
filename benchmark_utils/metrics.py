@@ -259,3 +259,287 @@ def soft_f1(precision, recall):
     if precision + recall == 0:
         return 0
     return 2 * (precision * recall) / (precision + recall)
+
+
+# Implementation of the range metrics proposed by Tatbul et al.
+# https://arxiv.org/abs/1803.03639
+
+def extract_anomaly_ranges(labels: list[int]):
+    """
+    Extracts ranges of anomalies from a series of labels.
+
+    Parameters
+    ----------
+        labels : List[int]
+                Series of labels where 1 indicates an
+                anomaly and 0 indicates normal.
+
+    Returns
+    -------
+        ranges : List[Tuple[int, int]]
+                Each tuple represents a range (start_index, end_index)
+                where anomalies are present.
+    """
+    ranges = []
+    start = None
+
+    for i, label in enumerate(labels):
+        if label == 1 and start is None:
+            start = i  # Start of a new anomaly range
+        elif label == 0 and start is not None:
+            ranges.append((start, i - 1))  # End of the current anomaly range
+            start = None
+
+    # Handle the case where the series ends with an anomaly
+    if start is not None:
+        ranges.append((start, len(labels) - 1))
+
+    return ranges
+
+
+def existence_reward(real_range, predicted_ranges):
+    """
+    Calculates the existence reward for a real anomaly range.
+
+    Parameters
+    ----------
+        real_range : Tuple[int, int]
+                A tuple representing the range of a real anomaly
+                (start_index, end_index).
+
+        predicted_ranges : List[Tuple[int, int]]
+                A list of tuples representing the ranges of
+                predicted anomalies.
+
+    Returns
+    -------
+        reward : int
+                1 if there is any overlap between the real anomaly
+                range and a predicted range, 0 otherwise.
+    """
+    real_start, real_end = real_range
+
+    for pred_start, pred_end in predicted_ranges:
+        # Check if there is any overlap between real_range and this pred range
+        if max(real_start, pred_start) <= min(real_end, pred_end):
+            return 1  # Overlap exists
+
+    return 0  # No overlap exists
+
+
+def cardinality_factor(real_range, predicted_ranges):
+    """
+    Calculates the cardinality factor for the real anomaly range.
+
+    Parameters
+    ----------
+        real_range : Tuple[int, int]
+                A tuple representing the real anomaly range
+                as (start_index, end_index).
+        predicted_ranges : List[Tuple[int, int]]
+                A list of tuples representing predicted anomaly ranges,
+    Returns
+    -------
+        cardinality : float
+                The cardinality factor for the real anomaly range.
+    """
+    overlaps = 0
+    real_start, real_end = real_range
+
+    for pred_start, pred_end in predicted_ranges:
+        if max(real_start, pred_start) <= min(real_end, pred_end):
+            overlaps += 1
+
+    if overlaps <= 1:
+        return 1.0
+    else:
+        return 1.0 / overlaps
+
+
+def positional_bias(i, anomaly_length, bias_type='flat'):
+    """
+    Defines the positional bias function δ(i, AnomalyLength).
+
+    Parameters
+    ----------
+        i : int
+            The current position in the anomaly range.
+        anomaly_length : int
+            The total length of the real anomaly range.
+
+        bias_type : str
+            The type of positional bias ('flat', 'front', 'back', 'middle').
+
+    Returns
+    -------
+        float: The bias value for the current position.
+    """
+    if bias_type == 'flat':
+        return 1.0
+    elif bias_type == 'front':
+        return anomaly_length - i + 1
+    elif bias_type == 'back':
+        return i
+    elif bias_type == 'middle':
+        if i <= anomaly_length // 2:
+            return i
+        else:
+            return anomaly_length - i + 1
+    return 1.0
+
+
+def overlap_size(real_range, overlap_set, anomaly_length, bias_type='flat'):
+    """
+    Calculates the overlap size weighted by positional bias.
+
+    Parameters
+    ----------
+        real_range : Tuple[int, int]
+            A tuple representing the real anomaly range as
+            (start_index, end_index).
+        overlap_set : Set[int]
+            A set of indices where the real anomaly range overlaps with
+            predicted ranges.
+        bias_type : str
+            The type of positional bias ('flat', 'front', 'back', 'middle').
+
+    Returns:
+        float: The weighted overlap size based on positional bias.
+    """
+    overlap_value = 0
+    max_value = 0
+
+    for i in range(real_range[0], real_range[1] + 1):
+        bias = positional_bias(i - real_range[0] + 1,
+                               anomaly_length, bias_type)
+        max_value += bias
+        if i in overlap_set:
+            overlap_value += bias
+
+    return overlap_value / max_value
+
+
+def overlap_reward(real_range, predicted_ranges, bias_type='flat'):
+    """
+    Calculates the overlap reward for a real anomaly range.
+    Parameters
+    ----------
+        real_range : Tuple[int, int]
+            A tuple representing the real anomaly range as
+            (start_index, end_index).
+        predicted_ranges : List[Tuple[int, int]]
+            A list of tuples representing predicted anomaly ranges.
+        bias_type : str
+            The type of positional bias ('flat', 'front', 'back', 'middle').
+
+    Returns
+    -------
+        float: The overlap reward for the real anomaly range.
+    """
+    real_start, real_end = real_range
+    anomaly_length = real_end - real_start + 1
+    total_overlap = set()
+
+    for pred_start, pred_end in predicted_ranges:
+        overlap = set(range(max(real_start, pred_start),
+                            min(real_end, pred_end) + 1))
+        total_overlap.update(overlap)
+
+    if not total_overlap:
+        return 0.0
+
+    cardinality = cardinality_factor(real_range, predicted_ranges)
+    size = overlap_size(real_range, total_overlap, anomaly_length, bias_type)
+
+    return cardinality * size
+
+
+def recall_t(real_ranges, predicted_ranges, alpha=0.5, bias_type='flat'):
+    """
+    Calculates the range-based Recall as defined in the paper.
+
+    Parameters
+    ----------
+        real_ranges : List[Tuple[int, int]]
+            List of real anomaly ranges, where each range is a
+            tuple (start_index, end_index).
+        predicted_ranges : List[Tuple[int, int]]
+            List of predicted anomaly ranges, where each range is a
+            tuple (start_index, end_index).
+        alpha : float
+            The weight to assign to the existence reward.
+        bias_type : str
+            The type of positional bias ('flat', 'front', 'back', 'middle').
+
+    Returns
+    -------
+        float: The range-based recall score.
+    """
+    recall_sum = 0
+
+    for real_range in real_ranges:
+        existence = existence_reward(real_range, predicted_ranges)
+        overlap = overlap_reward(real_range, predicted_ranges,
+                                 bias_type=bias_type)
+        recall_sum += alpha * existence + (1 - alpha) * overlap
+
+    return recall_sum / len(real_ranges) if real_ranges else 0
+
+
+def precision_t(real_ranges, predicted_ranges, bias_type='flat'):
+    """
+    Calculates the range-based Precision as defined in the paper.
+
+    Parameters
+    ----------
+        real_ranges : List[Tuple[int, int]]
+            List of real anomaly ranges, where each range is a
+            tuple (start_index, end_index).
+        predicted_ranges : List[Tuple[int, int]]
+            List of predicted anomaly ranges, where each range is a
+            tuple (start_index, end_index).
+        bias_type : str
+            The type of positional bias ('flat', 'front', 'back', 'middle').
+
+    Returns
+    -------
+        float: The range-based precision score.
+    """
+    precision_sum = 0
+
+    for predicted_range in predicted_ranges:
+        overlap = overlap_reward(predicted_range, real_ranges,
+                                 bias_type=bias_type)
+        precision_sum += overlap
+
+    return precision_sum / len(predicted_ranges) if predicted_ranges else 0
+
+
+def f1_t(real_ranges, predicted_ranges, alpha=0.5, bias_type='flat'):
+    """
+    Calculates the range-based F1 score as defined in the paper.
+
+    Parameters
+    ----------
+        real_ranges : List[Tuple[int, int]]
+            List of real anomaly ranges, where each range is a
+            tuple (start_index, end_index).
+        predicted_ranges : List[Tuple[int, int]]
+            List of predicted anomaly ranges, where each range is a
+            tuple (start_index, end_index).
+        alpha : float
+            The weight to assign to the existence reward.
+        bias_type : str
+            The type of positional bias ('flat', 'front', 'back', 'middle').
+
+    Returns
+    -------
+        float: The range-based F1 score.
+    """
+    recall_score = recall_t(real_ranges, predicted_ranges, alpha, bias_type)
+    precision_score = precision_t(real_ranges, predicted_ranges, bias_type)
+
+    if recall_score + precision_score == 0:
+        return 0
+
+    return 2 * (recall_score*precision_score)/(recall_score+precision_score)

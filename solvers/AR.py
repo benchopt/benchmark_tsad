@@ -1,6 +1,7 @@
 # AR model
 from benchopt import BaseSolver, safe_import_context
 from benchmark_utils import mean_overlaping_pred
+from benchmark_utils.models import AR_model
 
 with safe_import_context() as import_ctx:
     import torch
