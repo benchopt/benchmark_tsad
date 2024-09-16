@@ -8,7 +8,7 @@ with safe_import_context() as import_ctx:
 class Solver(BaseSolver):
     name = "OCSVM"
 
-    install_cmd = "cona"
+    install_cmd = "conda"
     requirements = ["scikit-learn"]
 
     parameters = {
