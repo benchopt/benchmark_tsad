@@ -12,8 +12,6 @@ class Solver(BaseSolver):
     install_cmd = "conda"
     requirements = ["pyod", "tqdm", "pip:torch"]
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
     sampling_strategy = "run_once"
 
     parameters = {
@@ -31,8 +29,13 @@ class Solver(BaseSolver):
     }
 
     def set_objective(self, X_train, y_test, X_test):
+
+        self.device = torch.device(
+            "cuda" if torch.cuda.is_available() else "cpu")
+
         self.X_train = X_train
         self.X_test, self.y_test = X_test, y_test
+
         self.clf = VAE(contamination=self.contamination,
                        preprocessing=self.preprocessing,
                        batch_size=self.batch_size,

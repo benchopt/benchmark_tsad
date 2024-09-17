@@ -1,6 +1,6 @@
 # LSTM Autoencoder
 from benchopt import BaseSolver, safe_import_context
-from benchmark_utils.models import LSTM_Autoencoder
+from benchmark_utils.models import AutoEncoderLSTM
 
 with safe_import_context() as import_ctx:
     import torch
@@ -16,8 +16,6 @@ class Solver(BaseSolver):
 
     install_cmd = "conda"
     requirements = ["pip:torch", "tqdm"]
-
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     sampling_strategy = "run_once"
 
@@ -41,14 +39,18 @@ class Solver(BaseSolver):
             for d in data)
 
     def set_objective(self, X_train, y_test, X_test):
+
+        self.device = torch.device(
+            "cuda" if torch.cuda.is_available() else "cpu")
+
         self.X_train = X_train
         self.X_test, self.y_test = X_test, y_test
         self.n_features = X_train.shape[1]
         self.seq_len = self.window_size
 
-        self.model = LSTM_Autoencoder(
-            self.seq_len,
+        self.model = AutoEncoderLSTM(
             self.n_features,
+            self.seq_len,
             self.embedding_dim,
             self.encoder_layers,
             self.decoder_layers,

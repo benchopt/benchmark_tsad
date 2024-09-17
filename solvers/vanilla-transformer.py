@@ -17,8 +17,6 @@ class Solver(BaseSolver):
     install_cmd = "conda"
     requirements = ["pip:torch", "tqdm"]
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
     sampling_strategy = "run_once"
 
     parameters = {
@@ -37,13 +35,16 @@ class Solver(BaseSolver):
 
     def set_objective(self, X_train, y_test, X_test):
 
+        self.device = torch.device(
+            "cuda" if torch.cuda.is_available() else "cpu")
+
         self.X_train = X_train
         self.X_test, self.y_test = X_test, y_test
 
         self.model = TransformerModel(
             input_size=X_train.shape[1],
-            sequence_length=self.window_size,
             horizon=self.horizon,
+            sequence_length=self.window_size,
             num_layers=self.num_layers,
             num_heads=self.num_heads,
             dim_feedforward=self.dim_feedforward

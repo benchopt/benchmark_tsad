@@ -1,7 +1,7 @@
 # AR model
 from benchopt import BaseSolver, safe_import_context
 from benchmark_utils import mean_overlaping_pred
-from benchmark_utils.models import AR_model
+from benchmark_utils.models import ARModel
 
 with safe_import_context() as import_ctx:
     import torch
@@ -16,8 +16,6 @@ class Solver(BaseSolver):
     install_cmd = "conda"
     requirements = ["pip:torch", "tqdm"]
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
     sampling_strategy = "run_once"
 
     parameters = {
@@ -31,13 +29,17 @@ class Solver(BaseSolver):
     }
 
     def set_objective(self, X_train, y_test, X_test):
+
+        self.device = torch.device(
+            "cuda" if torch.cuda.is_available() else "cpu")
+
         self.X_train = X_train  # (n_samples, n_features)
         self.X_test, self.y_test = X_test, y_test  # (n_samples, n_features)
         self.n_features = X_train.shape[1]
 
-        self.model = AR_model(
-            self.window_size,
+        self.model = ARModel(
             self.n_features,
+            self.window_size,
             self.horizon
         )
         self.optimizer = optim.Adam(
