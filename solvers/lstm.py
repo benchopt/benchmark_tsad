@@ -147,7 +147,8 @@ class Solver(BaseSolver):
         )
 
     def skip(self, X_train, X_test, y_test):
-        if self.device != torch.device("cuda"):
+        from benchopt.utils.sys_info import get_cuda_version
+        if get_cuda_version() is None:
             return True, "CUDA is not available. Skipping this solver."
         elif X_train.shape[0] < self.window_size:
             return True, "Not enough samples to create a window."
