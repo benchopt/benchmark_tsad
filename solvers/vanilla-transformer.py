@@ -1,7 +1,6 @@
 # Vanilla Transformer
 from benchopt import BaseSolver, safe_import_context
 from benchmark_utils import mean_overlaping_pred
-from benchmark_utils.models import TransformerModel
 
 with safe_import_context() as import_ctx:
     import torch
@@ -9,6 +8,7 @@ with safe_import_context() as import_ctx:
     import torch.optim as optim
     import numpy as np
     from tqdm import tqdm
+    from benchmark_utils.models import TransformerModel
 
 
 class Solver(BaseSolver):
@@ -36,7 +36,8 @@ class Solver(BaseSolver):
     def set_objective(self, X_train, y_test, X_test):
 
         self.device = torch.device(
-            "cuda" if torch.cuda.is_available() else "cpu")
+            "cuda" if torch.cuda.is_available() else "cpu"
+        )
 
         self.X_train = X_train
         self.X_test, self.y_test = X_test, y_test

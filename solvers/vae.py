@@ -31,7 +31,8 @@ class Solver(BaseSolver):
     def set_objective(self, X_train, y_test, X_test):
 
         self.device = torch.device(
-            "cuda" if torch.cuda.is_available() else "cpu")
+            "cuda" if torch.cuda.is_available() else "cpu"
+        )
 
         self.X_train = X_train
         self.X_test, self.y_test = X_test, y_test
