@@ -50,11 +50,11 @@ class Solver(BaseSolver):
         self.seq_len = self.window_size
 
         self.model = AutoEncoderLSTM(
-            self.n_features,
-            self.seq_len,
-            self.embedding_dim,
-            self.encoder_layers,
-            self.decoder_layers,
+            n_features=self.n_features,
+            sequence_length=self.seq_len,
+            embedding_dim=self.embedding_dim,
+            enc_layers=self.encoder_layers,
+            dec_layers=self.decoder_layers,
         )
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.lr)
         self.criterion = nn.MSELoss()

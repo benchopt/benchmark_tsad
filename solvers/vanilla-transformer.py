@@ -43,9 +43,9 @@ class Solver(BaseSolver):
         self.X_test, self.y_test = X_test, y_test
 
         self.model = TransformerModel(
-            input_size=X_train.shape[1],
-            horizon=self.horizon,
+            n_features=X_train.shape[1],
             sequence_length=self.window_size,
+            horizon=self.horizon,
             num_layers=self.num_layers,
             num_heads=self.num_heads,
             dim_feedforward=self.dim_feedforward
