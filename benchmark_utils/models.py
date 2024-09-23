@@ -68,7 +68,7 @@ class TransformerModel(nn.Module):
             self.d_model * sequence_length, horizon * n_features)
 
     def forward(self, src):
-        # src shape: (batch_size, sequence_length, input_size)
+        # src shape: (batch_size, sequence_length, n_features)
         src = self.input_projection(src)  # Project to d_model
         src = src.transpose(0, 1)  # (sequence_length, batch_size, d_model)
 
@@ -77,8 +77,8 @@ class TransformerModel(nn.Module):
         output = output.transpose(0, 1)
         output = output.flatten(1)  # (batch_size, sequence_length * d_model)
         output = self.fc_out(output)
-        # (batch_size, horizon, input_size)
-        output = output.view(-1, self.horizon, self.input_size)
+        # (batch_size, horizon, n_features)
+        output = output.view(-1, self.horizon, self.n_features)
 
         return output
 
