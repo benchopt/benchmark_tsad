@@ -181,10 +181,6 @@ class Solver(BaseSolver):
         if X_test.shape[0] < self.window_size + self.horizon:
             return True, "No enough testing samples"
 
-        from benchopt.utils.sys_info import get_cuda_version
-        if get_cuda_version() is None:
-            return True, "CUDA is not available"
-
         return False, None
 
     def get_result(self):
