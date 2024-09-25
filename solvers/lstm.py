@@ -1,6 +1,5 @@
 # LSTM Autoencoder
 from benchopt import BaseSolver, safe_import_context
-from benchmark_utils.models import LSTM_Autoencoder
 
 with safe_import_context() as import_ctx:
     import torch
@@ -9,6 +8,7 @@ with safe_import_context() as import_ctx:
     import numpy as np
     from torch.utils.data import DataLoader
     from tqdm import tqdm
+    from benchmark_utils.models import AutoEncoderLSTM
 
 
 class Solver(BaseSolver):
@@ -16,8 +16,6 @@ class Solver(BaseSolver):
 
     install_cmd = "conda"
     requirements = ["pip:torch", "tqdm"]
-
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     sampling_strategy = "run_once"
 
@@ -41,17 +39,22 @@ class Solver(BaseSolver):
             for d in data)
 
     def set_objective(self, X_train, y_test, X_test):
+
+        self.device = torch.device(
+            "cuda" if torch.cuda.is_available() else "cpu"
+        )
+
         self.X_train = X_train
         self.X_test, self.y_test = X_test, y_test
         self.n_features = X_train.shape[1]
         self.seq_len = self.window_size
 
-        self.model = LSTM_Autoencoder(
-            self.seq_len,
-            self.n_features,
-            self.embedding_dim,
-            self.encoder_layers,
-            self.decoder_layers,
+        self.model = AutoEncoderLSTM(
+            n_features=self.n_features,
+            sequence_length=self.seq_len,
+            embedding_dim=self.embedding_dim,
+            enc_layers=self.encoder_layers,
+            dec_layers=self.decoder_layers,
         )
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.lr)
         self.criterion = nn.MSELoss()
@@ -144,7 +147,8 @@ class Solver(BaseSolver):
         )
 
     def skip(self, X_train, X_test, y_test):
-        if self.device != torch.device("cuda"):
+        from benchopt.utils.sys_info import get_cuda_version
+        if get_cuda_version() is None:
             return True, "CUDA is not available. Skipping this solver."
         elif X_train.shape[0] < self.window_size:
             return True, "Not enough samples to create a window."

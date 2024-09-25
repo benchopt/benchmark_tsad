@@ -1,7 +1,6 @@
 # Vanilla Transformer
 from benchopt import BaseSolver, safe_import_context
 from benchmark_utils import mean_overlaping_pred
-from benchmark_utils.models import TransformerModel
 
 with safe_import_context() as import_ctx:
     import torch
@@ -9,6 +8,7 @@ with safe_import_context() as import_ctx:
     import torch.optim as optim
     import numpy as np
     from tqdm import tqdm
+    from benchmark_utils.models import TransformerModel
 
 
 class Solver(BaseSolver):
@@ -16,8 +16,6 @@ class Solver(BaseSolver):
 
     install_cmd = "conda"
     requirements = ["pip:torch", "tqdm"]
-
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     sampling_strategy = "run_once"
 
@@ -37,11 +35,15 @@ class Solver(BaseSolver):
 
     def set_objective(self, X_train, y_test, X_test):
 
+        self.device = torch.device(
+            "cuda" if torch.cuda.is_available() else "cpu"
+        )
+
         self.X_train = X_train
         self.X_test, self.y_test = X_test, y_test
 
         self.model = TransformerModel(
-            input_size=X_train.shape[1],
+            n_features=X_train.shape[1],
             sequence_length=self.window_size,
             horizon=self.horizon,
             num_layers=self.num_layers,
@@ -178,10 +180,6 @@ class Solver(BaseSolver):
 
         if X_test.shape[0] < self.window_size + self.horizon:
             return True, "No enough testing samples"
-
-        from benchopt.utils.sys_info import get_cuda_version
-        if get_cuda_version() is None:
-            return True, "CUDA is not available"
 
         return False, None
 
