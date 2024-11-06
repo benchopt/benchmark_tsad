@@ -1,11 +1,8 @@
 from benchopt import BaseDataset, safe_import_context
+from benchopt.config import get_data_path
 
 with safe_import_context() as import_ctx:
     import pandas as pd
-
-# No URLs temporarily, local data is used
-URL_XTRAIN = "./data/SWAT/swat_train2.csv"
-URL_XTEST = "./data/SWAT/swat2.csv"
 
 
 class Dataset(BaseDataset):
@@ -21,11 +18,23 @@ class Dataset(BaseDataset):
     }
 
     def get_data(self):
-        # path = config.get_data_path(key="SMAP")
+        path = get_data_path(key="SWAT")
+
+        if not (path / "swat_train2.csv").exists():
+            raise FileNotFoundError(
+                "Train data not found. Please download the data "
+                f"from the official repository and place it in {path}"
+            )
+
+        if not (path / "swat2.csv").exists():
+            raise FileNotFoundError(
+                "Test data not found. Please download the data "
+                f"from the official repository and place it in {path}"
+            )
 
         # Load the data
-        X_train = pd.read_csv(URL_XTRAIN)
-        X_test = pd.read_csv(URL_XTEST)
+        X_train = pd.read_csv(path / "swat_train2.csv")
+        X_test = pd.read_csv(path / "swat2.csv")
 
         # Extract the target
         y_test = X_test["Normal/Attack"].values

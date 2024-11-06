@@ -1,4 +1,5 @@
 from benchopt import BaseDataset, safe_import_context
+from benchopt.config import get_data_path
 
 with safe_import_context() as import_ctx:
     import pandas as pd
@@ -20,10 +21,23 @@ class Dataset(BaseDataset):
     }
 
     def get_data(self):
+        path = get_data_path(key="WADI")
+
+        if not (path / "WADI_14days_new.csv").exists():
+            raise FileNotFoundError(
+                "Train data not found. Please download the data "
+                f"from the official repository and place it in {path}"
+            )
+
+        if not (path / "WADI_attackdataLABLE.csv").exists():
+            raise FileNotFoundError(
+                "Test data not found. Please download the data "
+                f"from the official repository and place it in {path}"
+            )
 
         # Load the data
-        X_train = pd.read_csv(URL_XTRAIN)
-        X_test = pd.read_csv(URL_XTEST, header=1)
+        X_train = pd.read_csv(path / "WADI_14days_new.csv")
+        X_test = pd.read_csv(path / "WADI_attackdataLABLE.csv", header=1)
 
         # Data processing
         todrop = [
