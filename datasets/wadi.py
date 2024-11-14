@@ -4,20 +4,14 @@ from benchopt.config import get_data_path
 with safe_import_context() as import_ctx:
     import pandas as pd
 
-URL_XTRAIN = "./data/WADI/WADI_14days_new.csv"
-URL_XTEST = "./data/WADI/WADI_attackdataLABLE.csv"
-
 
 class Dataset(BaseDataset):
     name = "WADI"
 
     install_cmd = "conda"
-    requirements = ["pandas"]
 
     parameters = {
         "debug": [False],
-        "n_splits": [5],
-        "validation_size": [0.2],
     }
 
     def get_data(self):
@@ -26,13 +20,17 @@ class Dataset(BaseDataset):
         if not (path / "WADI_14days_new.csv").exists():
             raise FileNotFoundError(
                 "Train data not found. Please download the data "
-                f"from the official repository and place it in {path}"
+                "from the official repository"
+                "https://itrust.sutd.edu.sg/itrust-labs_datasets/dataset_info/"
+                f"and place it in {path}"
             )
 
         if not (path / "WADI_attackdataLABLE.csv").exists():
             raise FileNotFoundError(
                 "Test data not found. Please download the data "
-                f"from the official repository and place it in {path}"
+                "from the official repository"
+                "https://itrust.sutd.edu.sg/itrust-labs_datasets/dataset_info/"
+                f"and place it in {path}"
             )
 
         # Load the data

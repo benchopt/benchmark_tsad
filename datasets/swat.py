@@ -9,12 +9,9 @@ class Dataset(BaseDataset):
     name = "SWAT"
 
     install_cmd = "conda"
-    requirements = ["pandas", "scikit-learn"]
 
     parameters = {
         "debug": [False],
-        "n_splits": [5],
-        "validation_size": [0.2],
     }
 
     def get_data(self):
