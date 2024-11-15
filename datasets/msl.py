@@ -32,7 +32,7 @@ class Dataset(BaseDataset):
     }
 
     test_parameters = {
-        "debug": True,
+        "debug": [True],
     }
 
     def get_data(self):

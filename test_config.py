@@ -2,7 +2,7 @@ import sys  # noqa: F401
 
 import pytest  # noqa: F401
 
-from benchopt.utils.sys_info import get_cuda_version
+# from benchopt.utils.sys_info import get_cuda_version
 
 
 def check_test_solver_install(solver_class):
