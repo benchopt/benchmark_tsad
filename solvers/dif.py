@@ -3,6 +3,7 @@ from benchopt import BaseSolver
 from benchopt import safe_import_context
 
 with safe_import_context() as import_ctx:
+    from benchopt.utils.sys_info import get_cuda_version
     from pyod.models.dif import DIF
     import numpy as np
 
@@ -25,7 +26,10 @@ class Solver(BaseSolver):
     def set_objective(self, X_train, y_test, X_test):
         self.X_train = X_train
         self.X_test, self.y_test = X_test, y_test
-        self.clf = DIF(contamination=self.contamination, device="cuda")
+        if get_cuda_version() is None:
+            self.clf = DIF(contamination=self.contamination)
+        else:
+            self.clf = DIF(contamination=self.contamination, device="cuda")
 
     def run(self, _):
 
