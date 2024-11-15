@@ -22,6 +22,10 @@ class Solver(BaseSolver):
         "stride": [1],
     }
 
+    test_config = {
+        "dataset": "Simulated",
+    }
+
     sampling_strategy = "run_once"
 
     def set_objective(self, X_train, y_test, X_test):
