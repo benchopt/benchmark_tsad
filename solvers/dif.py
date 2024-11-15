@@ -72,9 +72,9 @@ class Solver(BaseSolver):
 
     def skip(self, X_train, X_test, y_test):
         # If cuda is not available, we skip the test because deep method
-        from benchopt.utils.sys_info import get_cuda_version
-        if get_cuda_version() is None:
-            return True, "Cuda is not available"
+        # from benchopt.utils.sys_info import get_cuda_version
+        # if get_cuda_version() is None:
+        #     return True, "Cuda is not available"
         if X_train.shape[0] < self.window_size:
             return True, "Not enough samples to create a window"
         return False, None
