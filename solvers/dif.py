@@ -22,10 +22,6 @@ class Solver(BaseSolver):
 
     sampling_strategy = "run_once"
 
-    test_config = {
-        "dataset": "Simulated",
-    }
-
     def set_objective(self, X_train, y_test, X_test):
         self.X_train = X_train
         self.X_test, self.y_test = X_test, y_test
