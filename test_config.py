@@ -12,9 +12,9 @@ def check_test_solver_install(solver_class):
     particular architecture, call pytest.xfail when
     detecting the situation.
     """
-    if solver_class.name.lower() == "dif":
-        if get_cuda_version() is None:
-            pytest.xfail("Deep IsolationForest needs a working GPU hardware.")
+    # if solver_class.name.lower() == "dif":
+    #     if get_cuda_version() is None:
+    #         pytest.xfail("Deep IsolationForest needs a working GPU hardware.")
 
     if solver_class.name.lower() == "lstm":
         if get_cuda_version() is None:
