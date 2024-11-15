@@ -32,9 +32,9 @@ class Dataset(BaseDataset):
     }
 
     test_parameters = {
-        "debug": True,
-        "n_splits": 2,
-        "validation_size": 0.2,
+        "debug": [True],
+        "n_splits": [2],
+        "validation_size": [0.2],
     }
 
     def get_data(self):
