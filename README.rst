@@ -10,11 +10,10 @@ Benchopt is a package to simplify and make more transparent and reproducible the
 
 Objective
 ---------
-This benchmark focuses on evaluating and comparing Time Series Anomaly Detection (TSAD) algorithms. The goal is to:
+This benchmark evaluates and compares Time Series Anomaly Detection (TSAD) algorithms. The goal is to:
 
 - Provide a standardized framework for comparing different TSAD approaches
 - Enable reproducible evaluation of anomaly detection performance
-- Help researchers and practitioners choose appropriate algorithms for their use cases
 
 Install
 -------
@@ -52,3 +51,6 @@ Available Solvers
 Contributing
 -----------
 Contributions are welcome! Please feel free to submit a Pull Request.
+
+.. |Build Status| image:: https://github.com/Jad-yehya/benchmark_tsad/workflows/Tests/badge.svg
+   :target: https://github.com/Jad-yehya/benchmark_tsad/actions
