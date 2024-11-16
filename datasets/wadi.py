@@ -15,6 +15,10 @@ class Dataset(BaseDataset):
     }
 
     def get_data(self):
+        # To get the data, you need to ask for access to the dataset
+        # at the following link:
+        # https://itrust.sutd.edu.sg/itrust-labs_datasets/dataset_info/
+
         path = get_data_path(key="WADI")
 
         if not (path / "WADI_14days_new.csv").exists():
@@ -59,6 +63,8 @@ class Dataset(BaseDataset):
                      "Attack LABLE (1:No Attack, -1:Attack)"],
             inplace=True
         )
+        # Using ffill to fill the missing values because
+        # the only missing values are in the last two rows
         X_test.ffill(inplace=True)
         X_test = X_test.to_numpy()
 
