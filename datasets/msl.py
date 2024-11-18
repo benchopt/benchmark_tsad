@@ -24,9 +24,6 @@ URL_YTEST = (
 class Dataset(BaseDataset):
     name = "MSL"
 
-    install_cmd = "conda"
-    requirements = ["pandas", "requests"]
-
     parameters = {
         "debug": [False],
     }
