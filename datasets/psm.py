@@ -20,8 +20,7 @@ URL_YTEST = (
 
 class Dataset(BaseDataset):
     name = "PSM"
-    install_cmd = "conda"
-    requirements = ["pandas"]
+
     parameters = {
         "debug": [False],
     }
@@ -31,8 +30,8 @@ class Dataset(BaseDataset):
     }
 
     def get_data(self):
-        # Check if the data is already here
         path = config.get_data_path(key="PSM")
+
         # Check if the data is already here
         if not path.exists():
             path.mkdir(parents=True, exist_ok=True)

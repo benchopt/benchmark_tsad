@@ -26,6 +26,10 @@ class Dataset(BaseDataset):
     }
 
     def get_data(self):
+        # Simulated dataset created using scikit-learn
+        # We create a regression dataset with some anomalies
+
+        # Creating normal data
         X_train, _ = make_regression(
             n_samples=self.n_samples,
             n_features=self.n_features,
@@ -40,6 +44,7 @@ class Dataset(BaseDataset):
 
         assert X_test.shape == (self.n_samples, self.n_features)
 
+        # Adding anomalies
         y_test = np.zeros(self.n_samples)
         for i in range(self.n_anomaly):
             idx = np.random.randint(self.n_samples)

@@ -22,9 +22,6 @@ URL_YTEST = (
 class Dataset(BaseDataset):
     name = "SMAP"
 
-    install_cmd = "conda"
-    requirements = ["pandas", "scikit-learn"]
-
     parameters = {
         "debug": [False],
         "n_splits": [5],
