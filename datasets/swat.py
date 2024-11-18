@@ -6,31 +6,39 @@ with safe_import_context() as import_ctx:
 
 
 class Dataset(BaseDataset):
-    name = "SWAT"
-
-    install_cmd = "conda"
+    name = "SWaT"
 
     parameters = {
         "debug": [False],
     }
 
+    test_parameters = {
+        "debug": [True],
+    }
+
     def get_data(self):
         # To get the data, you need to ask for access to the dataset
         # at the following link:
-        # https://itrust.sutd.edu.sg/itrust-labs_datasets/dataset_info/
+        # https://drive.google.com/drive/folders/1xhcYqh6okRs98QJomFWBKNLw4d1T4Q0w
 
-        path = get_data_path(key="SWAT")
+        path = get_data_path(key="SWaT")
 
         if not (path / "swat_train2.csv").exists():
             raise FileNotFoundError(
                 "Train data not found. Please download the data "
-                f"from the official repository and place it in {path}"
+                "from the Google Drive "
+                "https://drive.google.com/drive/folders/"
+                "1xhcYqh6okRs98QJomFWBKNLw4d1T4Q0w"
+                f" and place it in {path}"
             )
 
         if not (path / "swat2.csv").exists():
             raise FileNotFoundError(
                 "Test data not found. Please download the data "
-                f"from the official repository and place it in {path}"
+                "from the Google Drive "
+                "https://drive.google.com/drive/folders/"
+                "1xhcYqh6okRs98QJomFWBKNLw4d1T4Q0w"
+                f" and place it in {path}"
             )
 
         # Load the data

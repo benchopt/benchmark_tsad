@@ -8,10 +8,12 @@ with safe_import_context() as import_ctx:
 class Dataset(BaseDataset):
     name = "WADI"
 
-    install_cmd = "conda"
-
     parameters = {
         "debug": [False],
+    }
+
+    test_parameters = {
+        "debug": [True],
     }
 
     def get_data(self):
@@ -42,6 +44,8 @@ class Dataset(BaseDataset):
         X_test = pd.read_csv(path / "WADI_attackdataLABLE.csv", header=1)
 
         # Data processing
+        # Dropping the following colummns because more than 50% of the values
+        # are missing. (Except Date and Time)
         todrop = [
             "2_LS_001_AL",
             "2_LS_002_AL",
