@@ -16,10 +16,10 @@ def check_test_solver_install(solver_class):
         if get_cuda_version() is None:
             pytest.xfail("Deep IsolationForest needs a working GPU hardware.")
 
-    if solver_class.name.lower() == "lstm":
-        if get_cuda_version() is None:
-            pytest.xfail("LSTM needs a working GPU hardware.")
+    # if solver_class.name.lower() == "lstm":
+    #     if get_cuda_version() is None:
+    #         pytest.xfail("LSTM needs a working GPU hardware.")
 
-    if solver_class.name.lower() == "transformer":
-        if get_cuda_version() is None:
-            pytest.xfail("Transformer needs a working GPU hardware.")
+    # if solver_class.name.lower() == "transformer":
+    #     if get_cuda_version() is None:
+    #         pytest.xfail("Transformer needs a working GPU hardware.")

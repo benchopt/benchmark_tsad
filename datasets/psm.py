@@ -26,6 +26,10 @@ class Dataset(BaseDataset):
         "debug": [False],
     }
 
+    test_parameters = {
+        "debug": [True],
+    }
+
     def get_data(self):
         # Check if the data is already here
         path = config.get_data_path(key="PSM")

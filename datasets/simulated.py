@@ -18,6 +18,13 @@ class Dataset(BaseDataset):
         "n_anomaly": [90],
     }
 
+    test_parameters = {
+        "n_samples": [500],
+        "n_features": [5],
+        "noise": [0.1],
+        "n_anomaly": [90],
+    }
+
     def get_data(self):
         X_train, _ = make_regression(
             n_samples=self.n_samples,

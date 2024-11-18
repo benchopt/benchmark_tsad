@@ -31,6 +31,12 @@ class Dataset(BaseDataset):
         "validation_size": [0.2],
     }
 
+    test_parameters = {
+        "debug": [True],
+        "n_splits": [2],
+        "validation_size": [0.2],
+    }
+
     def get_data(self):
         path = config.get_data_path(key="SMAP")
 
