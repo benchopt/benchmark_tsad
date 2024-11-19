@@ -57,6 +57,7 @@ class Solver(BaseSolver):
             self.optimizer, mode='min', factor=0.5, patience=5
         )
 
+        # Using only windowed data, parameter used only for consistency
         if self.window:
             if self.X_train is not None:
                 self.Xw_train = np.lib.stride_tricks.sliding_window_view(
@@ -91,6 +92,7 @@ class Solver(BaseSolver):
         patience = 20
         no_improve = 0
 
+        # Training loop
         for epoch in ti:
             self.model.train()
             total_loss = 0
@@ -115,7 +117,7 @@ class Solver(BaseSolver):
                 total_loss += loss.item()
 
                 avg_loss = total_loss / (len(self.Xw_train) // self.batch_size)
-                ti.set_description(f"Epoch {epoch} (loss={avg_loss:.5e})")  # noqa
+                ti.set_description(f"Epoch {epoch} (loss={avg_loss:.5e})")
 
                 # Learning rate scheduling
                 self.scheduler.step(avg_loss)
@@ -128,13 +130,11 @@ class Solver(BaseSolver):
                 else:
                     no_improve += 1
                     if no_improve == patience:
-                        # print("Early stopping!")
                         break
 
-        # self.model.load_state_dict(torch.load('best_model.pth'))
-
+        # Test loop
         self.model.eval()
-        batch_size = 1024  # Adjust this based on your GPU memory
+        batch_size = 1024
         all_predictions = []
 
         with torch.no_grad():
@@ -161,11 +161,13 @@ class Solver(BaseSolver):
         x_hat[self.window_size+self.horizon:] = mean_overlaping_pred(
             xw_hat, 1)
 
+        # Calculating the percentile value for the threshold
         percentile_value = np.percentile(
             np.abs(self.X_test[self.window_size:] - x_hat[self.window_size:]),
             self.percentile
         )
 
+        # Thresholding
         predictions = np.zeros_like(x_hat)-1
         predictions[self.window_size:] = np.where(
             np.abs(self.X_test[self.window_size:] -
@@ -177,10 +179,6 @@ class Solver(BaseSolver):
     def skip(self, X_train, X_test, y_test):
         if X_train.shape[0] < self.window_size + self.horizon:
             return True, "No enough training samples"
-
-        if X_test.shape[0] < self.window_size + self.horizon:
-            return True, "No enough testing samples"
-
         return False, None
 
     def get_result(self):

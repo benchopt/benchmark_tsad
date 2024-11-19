@@ -11,7 +11,7 @@ with safe_import_context() as import_ctx:
 
 
 class Solver(BaseSolver):
-    name = "AR"
+    name = "AR"  # AutoRegressive Linear model
 
     install_cmd = "conda"
     requirements = ["pip:torch", "tqdm"]
@@ -130,11 +130,13 @@ class Solver(BaseSolver):
             xw_hat, 1
         )
 
+        # Calculating the percentile value for the threshold
         percentile_value = np.percentile(
             np.abs(self.X_test[self.window_size:] - x_hat[self.window_size:]),
             self.percentile
         )
 
+        # Thresholding
         predictions = np.zeros_like(x_hat)-1
         predictions[self.window_size:] = np.where(
             np.abs(self.X_test[self.window_size:] -
@@ -143,6 +145,7 @@ class Solver(BaseSolver):
 
         self.predictions = np.max(predictions, axis=1)
 
+    # Skipping the solver call if a condition is met
     def skip(self, X_train, X_test, y_test):
         if X_train.shape[0] < self.window_size + self.horizon:
             return True, "No enough training samples"
