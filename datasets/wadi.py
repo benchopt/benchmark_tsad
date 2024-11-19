@@ -4,6 +4,20 @@ from benchopt.config import get_data_path
 with safe_import_context() as import_ctx:
     import pandas as pd
 
+    # Temporary : Checks if the data is available for the tests
+    path = get_data_path(key="WADI")
+    if (
+        not (path / "WADI_14days_new.csv").exists()
+    ) or (
+        not (path / "WADI_attackdataLABLE.csv").exists()
+    ):
+        raise ImportError(
+            "Test data not found. Please download the data "
+            "from the official repository "
+            "https://itrust.sutd.edu.sg/itrust-labs_datasets/dataset_info/"
+            f" and place it in {path}"
+        )
+
 
 class Dataset(BaseDataset):
     name = "WADI"
@@ -26,17 +40,17 @@ class Dataset(BaseDataset):
         if not (path / "WADI_14days_new.csv").exists():
             raise FileNotFoundError(
                 "Train data not found. Please download the data "
-                "from the official repository"
+                "from the official repository "
                 "https://itrust.sutd.edu.sg/itrust-labs_datasets/dataset_info/"
-                f"and place it in {path}"
+                f" and place it in {path}"
             )
 
         if not (path / "WADI_attackdataLABLE.csv").exists():
             raise FileNotFoundError(
                 "Test data not found. Please download the data "
-                "from the official repository"
+                "from the official repository "
                 "https://itrust.sutd.edu.sg/itrust-labs_datasets/dataset_info/"
-                f"and place it in {path}"
+                f" and place it in {path}"
             )
 
         # Load the data
@@ -64,7 +78,7 @@ class Dataset(BaseDataset):
         y_test = X_test["Attack LABLE (1:No Attack, -1:Attack)"].values
         X_test.drop(
             columns=todrop + [
-                     "Attack LABLE (1:No Attack, -1:Attack)"],
+                "Attack LABLE (1:No Attack, -1:Attack)"],
             inplace=True
         )
         # Using ffill to fill the missing values because

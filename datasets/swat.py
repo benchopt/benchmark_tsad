@@ -4,6 +4,22 @@ from benchopt.config import get_data_path
 with safe_import_context() as import_ctx:
     import pandas as pd
 
+    # Temporary : Checks if the data is available for the tests
+    path = get_data_path(key="SWaT")
+
+    if (
+        not (path / "swat_train2.csv").exists()
+    ) or (
+        not (path / "swat2.csv").exists()
+    ):
+        raise ImportError(
+            "Test data not found. Please download the data "
+            "from the Google Drive "
+            "https://drive.google.com/drive/folders/"
+            "1xhcYqh6okRs98QJomFWBKNLw4d1T4Q0w"
+            f" and place it in {path}"
+        )
+
 
 class Dataset(BaseDataset):
     name = "SWaT"
