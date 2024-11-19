@@ -58,13 +58,19 @@ class Solver(BaseSolver):
                 (self.X_train.shape[0] - self.window_size) // self.stride
             ) + 1
 
+            # Mapping the binary output from {-1, 1} to {1, 0}
+            # For consistency with the other solvers
             self.raw_y_hat = np.array(raw_y_hat)
             self.raw_y_hat = np.where(self.raw_y_hat == -1, 1, 0)
+
+            # Adding -1 for the non predicted samples
+            # The first window_size samples are not predicted by the model
             self.raw_y_hat = np.append(
                 np.full(self.X_train.shape[0] -
                         result_shape, -1), self.raw_y_hat
             )
 
+            # Anomaly scores (Not used but allows finer thresholding)
             self.raw_anomaly_score = np.array(raw_anomaly_score)
             self.raw_anomaly_score = np.append(
                 np.full(result_shape, -1), self.raw_anomaly_score

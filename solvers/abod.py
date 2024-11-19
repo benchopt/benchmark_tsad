@@ -9,7 +9,7 @@ with safe_import_context() as import_ctx:
 
 
 class Solver(BaseSolver):
-    name = "ABOD"
+    name = "ABOD"  # Angle-Based Outlier Detection
 
     install_cmd = "conda"
     requirements = ["pip:pyod"]
@@ -34,8 +34,10 @@ class Solver(BaseSolver):
         )
 
     def run(self, _):
+        # Using only windowed data, parameter used only for consistency
         if self.window:
-            # We need to transform the data to have a rolling window
+
+            # Transofrming the data into rolling windowed data
             if self.X_train is not None:
                 self.Xw_train = np.lib.stride_tricks.sliding_window_view(
                     self.X_train, window_shape=self.window_size, axis=0
@@ -51,6 +53,7 @@ class Solver(BaseSolver):
                     self.y_test, window_shape=self.window_size, axis=0
                 )[::self.stride]
 
+            # Flattening the data for the model
             flatrain = self.Xw_train.reshape(self.Xw_train.shape[0], -1)
             flatest = self.Xw_test.reshape(self.Xw_test.shape[0], -1)
 
@@ -64,18 +67,25 @@ class Solver(BaseSolver):
                 (self.X_train.shape[0] - self.window_size) // self.stride
             ) + 1
 
+            # Mapping the binary output from {-1, 1} to {1, 0}
+            # For consistency with the other solvers
             self.raw_y_hat = np.array(raw_y_hat)
             self.raw_y_hat = np.where(self.raw_y_hat == -1, 1, 0)
+
+            # Adding -1 for the non predicted samples
+            # The first window_size samples are not predicted by the model
             self.raw_y_hat = np.append(
                 np.full(self.X_train.shape[0] -
                         result_shape, -1), self.raw_y_hat
             )
 
+            # Anomaly scores (Not used but allows finer thresholding)
             self.raw_anomaly_score = np.array(raw_anomaly_score)
             self.raw_anomaly_score = np.append(
                 np.full(result_shape, -1), self.raw_anomaly_score
             )
 
+    # Function used to skip a solver call when n_neighbors >= window_size
     def skip(self, X_train, X_test, y_test):
         if self.n_neighbors >= self.window_size:
             return True, "Number of neighbors greater than number of samples."
