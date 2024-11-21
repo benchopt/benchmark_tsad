@@ -1,22 +1,14 @@
 from benchopt import BaseDataset, safe_import_context
 from benchopt.config import get_data_path
+from benchmark_utils import check_data
 
 with safe_import_context() as import_ctx:
     import pandas as pd
 
-    # Temporary : Checks if the data is available for the tests
+    # Checking if the data is available
     path = get_data_path(key="WADI")
-    if (
-        not (path / "WADI_14days_new.csv").exists()
-    ) or (
-        not (path / "WADI_attackdataLABLE.csv").exists()
-    ):
-        raise ImportError(
-            "Test data not found. Please download the data "
-            "from the official repository "
-            "https://itrust.sutd.edu.sg/itrust-labs_datasets/dataset_info/"
-            f" and place it in {path}"
-        )
+    check_data(path, "WADI", "train")
+    check_data(path, "WADI", "test")
 
 
 class Dataset(BaseDataset):
@@ -34,24 +26,6 @@ class Dataset(BaseDataset):
         # To get the data, you need to ask for access to the dataset
         # at the following link:
         # https://itrust.sutd.edu.sg/itrust-labs_datasets/dataset_info/
-
-        path = get_data_path(key="WADI")
-
-        if not (path / "WADI_14days_new.csv").exists():
-            raise FileNotFoundError(
-                "Train data not found. Please download the data "
-                "from the official repository "
-                "https://itrust.sutd.edu.sg/itrust-labs_datasets/dataset_info/"
-                f" and place it in {path}"
-            )
-
-        if not (path / "WADI_attackdataLABLE.csv").exists():
-            raise FileNotFoundError(
-                "Test data not found. Please download the data "
-                "from the official repository "
-                "https://itrust.sutd.edu.sg/itrust-labs_datasets/dataset_info/"
-                f" and place it in {path}"
-            )
 
         # Load the data
         X_train = pd.read_csv(path / "WADI_14days_new.csv")

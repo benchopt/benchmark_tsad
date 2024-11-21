@@ -1,24 +1,14 @@
 from benchopt import BaseDataset, safe_import_context
 from benchopt.config import get_data_path
+from benchmark_utils import check_data
 
 with safe_import_context() as import_ctx:
     import pandas as pd
 
-    # Temporary : Checks if the data is available for the tests
+    # Checking if the data is available
     path = get_data_path(key="SWaT")
-
-    if (
-        not (path / "swat_train2.csv").exists()
-    ) or (
-        not (path / "swat2.csv").exists()
-    ):
-        raise ImportError(
-            "Test data not found. Please download the data "
-            "from the Google Drive "
-            "https://drive.google.com/drive/folders/"
-            "1xhcYqh6okRs98QJomFWBKNLw4d1T4Q0w"
-            f" and place it in {path}"
-        )
+    check_data(path, "SWaT", "train")
+    check_data(path, "SWaT", "test")
 
 
 class Dataset(BaseDataset):
@@ -38,24 +28,6 @@ class Dataset(BaseDataset):
         # https://drive.google.com/drive/folders/1xhcYqh6okRs98QJomFWBKNLw4d1T4Q0w
 
         path = get_data_path(key="SWaT")
-
-        if not (path / "swat_train2.csv").exists():
-            raise FileNotFoundError(
-                "Train data not found. Please download the data "
-                "from the Google Drive "
-                "https://drive.google.com/drive/folders/"
-                "1xhcYqh6okRs98QJomFWBKNLw4d1T4Q0w"
-                f" and place it in {path}"
-            )
-
-        if not (path / "swat2.csv").exists():
-            raise FileNotFoundError(
-                "Test data not found. Please download the data "
-                "from the Google Drive "
-                "https://drive.google.com/drive/folders/"
-                "1xhcYqh6okRs98QJomFWBKNLw4d1T4Q0w"
-                f" and place it in {path}"
-            )
 
         # Load the data
         X_train = pd.read_csv(path / "swat_train2.csv")
