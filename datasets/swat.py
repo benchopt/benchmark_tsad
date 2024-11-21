@@ -23,11 +23,12 @@ class Dataset(BaseDataset):
     }
 
     def get_data(self):
+
         # To get the data, you need to ask for access to the dataset
         # at the following link:
         # https://drive.google.com/drive/folders/1xhcYqh6okRs98QJomFWBKNLw4d1T4Q0w
 
-        path = get_data_path(key="SWaT")
+        # path = get_data_path(key="SWaT")
 
         # Load the data
         X_train = pd.read_csv(path / "swat_train2.csv")
