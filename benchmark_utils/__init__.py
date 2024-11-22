@@ -76,14 +76,14 @@ def check_data(data_path, dataset, data_type):
         else:
             raise ValueError("data_type must be either 'train' or 'test'")
     else:
-        raise ValueError("dataset must be either 'WADI' or 'SWAT'")
+        raise ValueError("dataset must be either 'WADI' or 'SWaT'")
 
     for file in required_files:
         if not os.path.exists(os.path.join(data_path, file)):
             official_repo = {
                 "WADI": "https://itrust.sutd.edu.sg/itrust-labs_datasets/\
                     dataset_info/",
-                "SWAT": "https://drive.google.com/drive/folders/\
+                "SWaT": "https://drive.google.com/drive/folders/\
                     1xhcYqh6okRs98QJomFWBKNLw4d1T4Q0w"
             }
             raise ImportError(
