@@ -6,9 +6,9 @@ with safe_import_context() as import_ctx:
     import pandas as pd
 
     # Checking if the data is available
-    path = get_data_path(key="WADI")
-    check_data(path, "WADI", "train")
-    check_data(path, "WADI", "test")
+    PATH = get_data_path(key="WADI")
+    check_data(PATH, "WADI", "train")
+    check_data(PATH, "WADI", "test")
 
 
 class Dataset(BaseDataset):
@@ -28,8 +28,8 @@ class Dataset(BaseDataset):
         # https://itrust.sutd.edu.sg/itrust-labs_datasets/dataset_info/
 
         # Load the data
-        X_train = pd.read_csv(path / "WADI_14days_new.csv")
-        X_test = pd.read_csv(path / "WADI_attackdataLABLE.csv", header=1)
+        X_train = pd.read_csv(PATH / "WADI_14days_new.csv")
+        X_test = pd.read_csv(PATH / "WADI_attackdataLABLE.csv", header=1)
 
         # Data processing
         # Dropping the following colummns because more than 50% of the values

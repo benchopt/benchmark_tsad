@@ -4,7 +4,7 @@
 # the usual import syntax
 
 from benchopt import safe_import_context
-import os
+from pathlib import Path
 
 with safe_import_context() as import_ctx:
     import numpy as np
@@ -79,7 +79,7 @@ def check_data(data_path, dataset, data_type):
         raise ValueError("dataset must be either 'WADI' or 'SWaT'")
 
     for file in required_files:
-        if not os.path.exists(os.path.join(data_path, file)):
+        if not Path(data_path, file).exists():
             official_repo = {
                 "WADI": "https://itrust.sutd.edu.sg/itrust-labs_datasets/\
                     dataset_info/",
