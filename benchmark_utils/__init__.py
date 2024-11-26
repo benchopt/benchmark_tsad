@@ -52,11 +52,11 @@ def check_data(data_path, dataset, data_type):
 
     Args:
     data_path: str
-               The path to the data directory.
+        The path to the data directory.
     dataset: str
-             The name of the dataset, either 'WADI' or 'SWaT'.
+        The name of the dataset, either 'WADI' or 'SWaT'.
     data_type: str
-               The type of data, either 'train' or 'test'.
+        The type of data, either 'train' or 'test'.
 
     Raises:
     ImportError: If the required data files are not found.
