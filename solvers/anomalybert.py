@@ -1,3 +1,4 @@
+from models.anomaly_transformer import get_anomaly_transformer
 from benchopt import BaseSolver
 
 import sys
@@ -8,17 +9,17 @@ import torch.nn as nn
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from tqdm import tqdm
 
+from benchmark_utils.predictions import cutoff_scores
+
 # Add AnomalyBERT to path
 sys.path.append(str(Path(__file__).parent.parent / 'AnomalyBERT'))
-
-from models.anomaly_transformer import get_anomaly_transformer
 
 
 class Solver(BaseSolver):
     name = "AnomalyBERT"
     sampling_strategy = "run_once"
 
-    requirements = ["pip::timm", "pip::torch", "pip::numpy", "pip::tqdm"]
+    requirements = ["pip::timm", "pytorch", "numpy", "tqdm"]
 
     parameters = {
         "patch_size": [1],
@@ -31,6 +32,7 @@ class Solver(BaseSolver):
         "seed": [548920],
         "device": ["cuda:1"],
         "window_sliding": [16],
+        "cutoff": [None],
     }
 
     sampling_strategy = "run_once"
@@ -237,7 +239,6 @@ class Solver(BaseSolver):
             optimizer.step()
             scheduler.step()
 
-    def get_result(self):
         device = torch.device(
             self.device if torch.cuda.is_available() else 'cpu')
         self.model.eval()
@@ -281,9 +282,14 @@ class Solver(BaseSolver):
                     n_overlap[idx:idx+window_size] += 1
 
         n_overlap[n_overlap == 0] = 1
-        scores = (output_values / n_overlap).cpu().numpy()
+        self.anomaly_scores = (output_values / n_overlap).cpu().numpy()
+        self.anomaly_predictions = cutoff_scores(
+            self.anomaly_scores,
+            cutoff=self.cutoff,
+        )
 
-        threshold = np.percentile(scores, (1 - 0.1) * 100)
-        y_hat = (scores > threshold).astype(int)
-
-        return dict(y_hat=y_hat, raw_anomaly_score=scores)
+    def get_result(self):
+        result = dict(anomaly_scores=self.anomaly_scores)
+        if self.anomaly_predictions is not None:
+            result["anomaly_predictions"] = self.anomaly_predictions
+        return result

@@ -11,13 +11,14 @@ from torch.utils.data import DataLoader
 from benchmark_utils.models import TransformerModel
 from benchmark_utils.windowing import make_windowed_dataset
 from benchmark_utils.windowing import reconstruct_from_windows
+from benchmark_utils.predictions import cutoff_scores
 
 
 class Solver(BaseSolver):
     name = "Transformer"
 
     install_cmd = "conda"
-    requirements = ["pip::torch", "tqdm"]
+    requirements = ["pytorch", "tqdm"]
 
     sampling_strategy = "run_once"
 
@@ -31,13 +32,11 @@ class Solver(BaseSolver):
         "horizon": [1],
         "window_size": [256],
         "stride": [1],
-        "percentile": [97],
+        "cutoff": [None],
     }
     test_config = {
-        'solver': {
-            "n_epochs": 1,
-            "window_size": 16,
-        }
+        "n_epochs": 1,
+        "window_size": 16,
     }
 
     def set_objective(self, X_train, X_test):
@@ -113,7 +112,9 @@ class Solver(BaseSolver):
                 total_loss += loss.item()
 
                 avg_loss = total_loss / (len(self.Xw_train) // self.batch_size)
-                ti.set_description(f"Epoch {epoch} (loss={avg_loss:.5e})")
+                ti.set_description(
+                    f"Epoch {epoch} (loss={avg_loss:.5e})"
+                )
 
                 # Learning rate scheduling
                 self.scheduler.step(avg_loss)
@@ -122,7 +123,6 @@ class Solver(BaseSolver):
                 if avg_loss < best_loss:
                     best_loss = avg_loss
                     no_improve = 0
-                    torch.save(self.model.state_dict(), 'best_model.pth')
                 else:
                     no_improve += 1
                     if no_improve == patience:
@@ -148,21 +148,22 @@ class Solver(BaseSolver):
             n_features=self.X_test.shape[1]
         )
 
-        # Calculating the percentile value for the threshold
-        percentile_value = np.percentile(
-            np.abs(self.X_test[..., self.window_size:]
-                   - x_hat[..., self.window_size:]),
-            self.percentile
+        reconstruction_err = np.abs(
+            self.X_test[..., self.window_size:] - x_hat[..., self.window_size:]
+        )
+        self.anomaly_scores = np.full(
+            self.X_test.shape[:1] + self.X_test.shape[2:],
+            np.nan,
+            dtype=float,
+        )
+        self.anomaly_scores[..., self.window_size:] = np.max(
+            reconstruction_err, axis=1
         )
 
-        # Thresholding
-        predictions = np.zeros_like(self.X_test)-1
-        predictions[..., self.window_size:] = np.where(
-            np.abs(self.X_test[..., self.window_size:] -
-                   x_hat[..., self.window_size:]) > percentile_value, 1, 0
+        self.anomaly_predictions = cutoff_scores(
+            self.anomaly_scores,
+            cutoff=self.cutoff,
         )
-
-        self.predictions = np.max(predictions, axis=1)
 
     def skip(self, X_train, X_test):
         if X_train.shape[-1] < self.window_size + self.horizon:
@@ -170,4 +171,7 @@ class Solver(BaseSolver):
         return False, None
 
     def get_result(self):
-        return dict(y_hat=self.predictions)
+        result = dict(anomaly_scores=self.anomaly_scores)
+        if self.anomaly_predictions is not None:
+            result["anomaly_predictions"] = self.anomaly_predictions
+        return result

@@ -1,17 +1,17 @@
 from benchopt import BaseSolver
 
-import numpy as np
-from TSB_AD.utils.slidingWindows import find_length
 from sklearn.preprocessing import MinMaxScaler
 
 from benchmark_utils.models import Autoencoder
+from benchmark_utils.predictions import cutoff_scores
+from benchmark_utils.windowing import find_period_length
 
 
 class Solver(BaseSolver):
     name = "AE"
 
     install_cmd = "conda"
-    requirements = ["pip::tsb-uad", "scikit-learn"]
+    requirements = ["pytorch", "scikit-learn", "tqdm"]
 
     parameters = {
         "window_size": [10, "auto"],
@@ -20,13 +20,20 @@ class Solver(BaseSolver):
         "learning_rate": [1e-3],
         "hidden_size": [64],
         "latent_size": [32],
+        "cutoff": [None],
+    }
+
+    test_config = {
+        "window_size": 10,
+        "num_epochs": 1,
+        "batch_size": 8,
     }
 
     sampling_strategy = "run_once"
 
     def set_objective(self, X_train, X_test):
         if self.window_size == "auto":
-            self.window_size = find_length(X_train)
+            self.window_size = find_period_length(X_train.reshape(-1))
 
         # Data received has shape (n_recordings, n_features, n_samples)
         n_features = X_train.shape[1]
@@ -50,23 +57,29 @@ class Solver(BaseSolver):
         )
 
         self.clf.predict(self.X_test)
-        score = self.clf.decision_scores_
+        anomaly_scores = self.clf.decision_scores_
 
-        self.score = (
+        self.anomaly_scores = (
             MinMaxScaler(feature_range=(0, 1))
-            .fit_transform(score.reshape(-1, 1))
+            .fit_transform(anomaly_scores.reshape(-1, 1))
             .ravel()
+        )
+        self.anomaly_predictions = cutoff_scores(
+            self.anomaly_scores,
+            cutoff=self.cutoff,
         )
 
     def skip(self, X_train, X_test):
         """Check if the solver can be skipped."""
-        if find_length(X_train) == 0 and self.window_size == "auto":
+        if find_period_length(X_train.reshape(-1)) == 0 and (
+            self.window_size == "auto"
+        ):
             return True, "Window size is 0"
         return False, None
 
     def get_result(self):
         """Return the result of the solver."""
-        # Binarizing the scores to 0 and 1
-        # TEMPORARY SOLUTION
-        self.final_score = np.where(self.score > 0.75, 1, 0)
-        return dict(y_hat=self.final_score)
+        result = dict(anomaly_scores=self.anomaly_scores)
+        if self.anomaly_predictions is not None:
+            result["anomaly_predictions"] = self.anomaly_predictions
+        return result

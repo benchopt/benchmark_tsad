@@ -1,8 +1,9 @@
 from benchopt import BaseSolver
 
 import torch
+from benchmark_utils.predictions import cutoff_scores
+from benchmark_utils.windowing import find_period_length
 from rosecdl.rosecdl import RoseCDL
-from TSB_AD.utils.slidingWindows import find_length
 
 
 class Solver(BaseSolver):
@@ -10,7 +11,7 @@ class Solver(BaseSolver):
 
     install_cmd = "conda"
     requirements = [
-        "pip::git+https://github.com/tommoral/rosecdl.git", "pip::torch"
+        "pytorch", "pip::git+https://github.com/tommoral/rosecdl.git"
     ]
 
     parameters = {
@@ -35,6 +36,7 @@ class Solver(BaseSolver):
             },
         ],
         "plot": [False],
+        "cutoff": [None],
     }
 
     sampling_strategy = "run_once"
@@ -49,11 +51,7 @@ class Solver(BaseSolver):
         self.X_test = X_test
 
         if self.kernel_size == "auto":
-            self.kernel_size = int(find_length(X_train.reshape(-1)))
-
-        print("=====================")
-        print(f"kernel_size: {self.kernel_size}")
-        print("=====================")
+            self.kernel_size = int(find_period_length(X_train.reshape(-1)))
 
         self.clf = RoseCDL(
             n_components=self.n_components,
@@ -75,7 +73,6 @@ class Solver(BaseSolver):
     def run(self, _):
         self.clf.fit(self.X_train)
         del self.X_train  # Free GPU memory for X_train after fitting
-        self.y_pred = self.clf.get_outlier_mask(self.X_test)
 
         xh, zh = self.clf.csc(
             torch.tensor(self.X_test, dtype=torch.float32, device=self.device)
@@ -88,9 +85,16 @@ class Solver(BaseSolver):
         )
         err = err.cpu().detach().numpy()
         # Aggregate errors over channels
-        self.err = err.sum(axis=1).reshape(-1)
+        self.anomaly_scores = err.sum(axis=1).reshape(-1)
+        self.anomaly_predictions = cutoff_scores(
+            self.anomaly_scores,
+            cutoff=self.cutoff,
+        )
         del self.clf  # Free GPU memory for the model
         torch.cuda.empty_cache()  # Release cached GPU memory
 
     def get_result(self):
-        return dict(y_hat=self.y_pred, raw_anomaly_score=self.err)
+        result = dict(anomaly_scores=self.anomaly_scores)
+        if self.anomaly_predictions is not None:
+            result["anomaly_predictions"] = self.anomaly_predictions
+        return result

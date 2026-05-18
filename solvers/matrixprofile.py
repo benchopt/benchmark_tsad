@@ -1,9 +1,9 @@
 from benchopt import BaseSolver
 from sklearn.preprocessing import MinMaxScaler
 
-import numpy as np
+from benchmark_utils.predictions import cutoff_scores
+from benchmark_utils.windowing import find_period_length
 from TSB_AD.models.MatrixProfile import MatrixProfile
-from TSB_AD.utils.slidingWindows import find_length
 
 
 class Solver(BaseSolver):
@@ -14,6 +14,14 @@ class Solver(BaseSolver):
 
     parameters = {
         "window_size": [128, "auto"],
+        "cutoff": [None],
+    }
+
+    test_config = {
+        "dataset": {
+            "n_features": 1,
+        },
+        "window_size": 8,
     }
 
     sampling_strategy = "run_once"
@@ -29,33 +37,29 @@ class Solver(BaseSolver):
         self.X_test = self.X_test.reshape(-1, n_features)
 
         if self.window_size == "auto":
-            self.window_size = int(find_length(X_train.reshape(-1)))
-
-        print("=====================")
-        print(f"window_size: {self.window_size}")
-        print("=====================")
+            self.window_size = int(find_period_length(X_train.reshape(-1)))
 
         self.clf = MatrixProfile(
             window=self.window_size,
         )
 
     def run(self, _):
-        print("Running Matrix Profile solver...")
         # Special solver, fitting on X_test
         self.clf.fit(self.X_test.reshape(-1))
-        print("MP Fitted")
-        self.scores = self.clf.decision_scores_
-        self.score = (
+        anomaly_scores = self.clf.decision_scores_
+        self.anomaly_scores = (
             MinMaxScaler(feature_range=(0, 1))
-            .fit_transform(self.scores.reshape(-1, 1))
+            .fit_transform(anomaly_scores.reshape(-1, 1))
             .ravel()
         )
-        print("MP Scored")
-        print(f"Score shape: {self.score.shape}")
+        self.anomaly_predictions = cutoff_scores(
+            self.anomaly_scores,
+            cutoff=self.cutoff,
+        )
 
     def skip(self, X_train, X_test):
         """Check if the solver can be skipped."""
-        if (find_length(X_train.reshape(-1)) == 0) and (
+        if (find_period_length(X_train.reshape(-1)) == 0) and (
                 self.window_size == "auto"):
             return True, "Window size is 0"
         if X_train.shape[1] != 1:
@@ -64,7 +68,7 @@ class Solver(BaseSolver):
 
     def get_result(self):
         """Return the result of the solver."""
-        # Binarizing the scores to 0 and 1
-        # TEMPORARY SOLUTION
-        self.final_score = np.where(self.score > 0.90, 1, 0)
-        return dict(y_hat=self.final_score, raw_anomaly_score=self.score)
+        result = dict(anomaly_scores=self.anomaly_scores)
+        if self.anomaly_predictions is not None:
+            result["anomaly_predictions"] = self.anomaly_predictions
+        return result

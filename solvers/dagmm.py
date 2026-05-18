@@ -1,10 +1,10 @@
 from benchopt import BaseSolver
 
-import numpy as np
 import pandas as pd
 from merlion.models.anomaly.dagmm import DAGMM, DAGMMConfig
 from merlion.utils.time_series import TimeSeries
-from sklearn.preprocessing import MinMaxScaler
+
+from benchmark_utils.predictions import cutoff_scores
 
 
 class Solver(BaseSolver):
@@ -22,6 +22,7 @@ class Solver(BaseSolver):
         "batch_size": [8192],
         "lambda_energy": [0.1],
         "lambda_cov": [0.005],
+        "cutoff": [None],
         # "device": ["cuda:3"]
     }
 
@@ -36,13 +37,9 @@ class Solver(BaseSolver):
         train_df = pd.DataFrame(self.X_train)
         test_df = pd.DataFrame(self.X_test)
 
-        print("Dataframe OK")
-
         # Merlion expects a time index or it will generate one
         self.train_data = TimeSeries.from_pd(train_df)
         self.test_data = TimeSeries.from_pd(test_df)
-
-        print("TimeSeries OK")
 
         # Configure DAGMM
         config = DAGMMConfig(
@@ -66,17 +63,14 @@ class Solver(BaseSolver):
         # Predict
         # get_anomaly_score returns a TimeSeries of scores
         scores_ts = self.model.get_anomaly_score(self.test_data)
-        self.scores = scores_ts.to_pd().values.flatten()
+        self.anomaly_scores = scores_ts.to_pd().values.flatten()
+        self.anomaly_predictions = cutoff_scores(
+            self.anomaly_scores,
+            cutoff=self.cutoff,
+        )
 
     def get_result(self):
-        # Normalize scores to 0-1 range for thresholding
-        scaler = MinMaxScaler(feature_range=(0, 1))
-        scores_norm = scaler.fit_transform(self.scores.reshape(-1, 1)).ravel()
-
-        # Simple thresholding
-        y_hat = np.where(scores_norm > 0.75, 1, 0)
-
-        return dict(
-            y_hat=y_hat,
-            raw_anomaly_score=self.scores
-        )
+        result = dict(anomaly_scores=self.anomaly_scores)
+        if self.anomaly_predictions is not None:
+            result["anomaly_predictions"] = self.anomaly_predictions
+        return result

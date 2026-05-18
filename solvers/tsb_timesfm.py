@@ -1,8 +1,12 @@
 from benchopt import BaseSolver
 
-import torch
+from importlib.util import find_spec
+
 import numpy as np
+import torch
 from TSB_AD.model_wrapper import run_TimesFM
+
+from benchmark_utils.predictions import cutoff_scores
 
 
 class Solver(BaseSolver):
@@ -13,6 +17,7 @@ class Solver(BaseSolver):
 
     parameters = {
         "win_size": [256],
+        "cutoff": [None],
     }
 
     sampling_strategy = "run_once"
@@ -23,15 +28,25 @@ class Solver(BaseSolver):
         self.data = self.data.reshape(-1, n_features)
         self.X_test = X_test.reshape(-1, n_features)
 
+    def skip(self, X_train, X_test):
+        if find_spec("timesfm") is None:
+            return True, "TSB-TimesFM requires the optional timesfm package."
+        return False, None
+
     def run(self, _):
-        self.y_hat = run_TimesFM(
+        anomaly_scores = run_TimesFM(
             data=self.data,
             win_size=self.win_size,
         )
-        self.raw_anomaly_score = self.y_hat[-len(self.X_test):]
+        self.anomaly_scores = anomaly_scores[-len(self.X_test):]
+        self.anomaly_predictions = cutoff_scores(
+            self.anomaly_scores,
+            cutoff=self.cutoff,
+        )
         torch.cuda.empty_cache()  # Release cached GPU memory
 
     def get_result(self):
-        threshold = np.percentile(self.raw_anomaly_score, 90)
-        self.y_hat = (self.raw_anomaly_score > threshold).astype(int)
-        return dict(y_hat=self.y_hat, raw_anomaly_score=self.raw_anomaly_score)
+        result = dict(anomaly_scores=self.anomaly_scores)
+        if self.anomaly_predictions is not None:
+            result["anomaly_predictions"] = self.anomaly_predictions
+        return result
