@@ -3,6 +3,8 @@ from benchopt import BaseSolver
 import torch
 from TSB_AD.models.TimesNet import TimesNet
 
+from benchmark_utils.predictions import cutoff_scores
+
 
 class Solver(BaseSolver):
     name = "TSB-TimesNet"
@@ -13,6 +15,20 @@ class Solver(BaseSolver):
     parameters = {
         "window_size": [256],
         "lr": [1e-4],
+        "epochs": [10],
+        "batch_size": [128],
+        "cutoff": [None],
+    }
+
+    test_config = {
+        "dataset": {
+            "n_samples": 512,
+            "n_features": 2,
+            "n_anomaly": 32,
+        },
+        "window_size": 32,
+        "epochs": 1,
+        "batch_size": 16,
     }
 
     sampling_strategy = "run_once"
@@ -25,8 +41,8 @@ class Solver(BaseSolver):
         self.clf = TimesNet(
             win_size=self.window_size,
             enc_in=n_features,
-            epochs=10,
-            batch_size=128,
+            epochs=self.epochs,
+            batch_size=self.batch_size,
             lr=self.lr,
             patience=3,
             features="M",
@@ -36,13 +52,25 @@ class Solver(BaseSolver):
 
     def run(self, _):
         self.clf.fit(self.X_train)
-        self.raw_anomaly_score = self.clf.decision_function(self.X_test)
+        self.anomaly_scores = self.clf.decision_function(self.X_test)
+        self.anomaly_predictions = cutoff_scores(
+            self.anomaly_scores,
+            cutoff=self.cutoff,
+        )
 
-        print("TimesNet done")
         del self.clf.model
         del self.clf
         torch.cuda.empty_cache()  # Release cached GPU memory
 
+    def skip(self, X_train, X_test):
+        if X_train.shape[-1] < self.window_size:
+            return True, "Not enough training samples to create a window."
+        if X_test.shape[-1] < self.window_size:
+            return True, "Not enough testing samples to create a window."
+        return False, None
+
     def get_result(self):
-        self.y_hat = (self.raw_anomaly_score > 0).astype(int)
-        return dict(y_hat=self.y_hat, raw_anomaly_score=self.raw_anomaly_score)
+        result = dict(anomaly_scores=self.anomaly_scores)
+        if self.anomaly_predictions is not None:
+            result["anomaly_predictions"] = self.anomaly_predictions
+        return result

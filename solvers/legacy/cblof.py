@@ -5,6 +5,8 @@ from benchopt import BaseSolver
 from pyod.models.cblof import CBLOF
 import numpy as np
 
+from benchmark_utils.predictions import cutoff_scores
+
 
 class Solver(BaseSolver):
     name = "CBLOF"
@@ -18,6 +20,7 @@ class Solver(BaseSolver):
         "n_clusters": [10],
         "window_size": [20],
         "stride": [1],
+        "cutoff": [None],
     }
 
     sampling_strategy = "run_once"
@@ -50,30 +53,18 @@ class Solver(BaseSolver):
             flatest = self.Xw_test.reshape(self.Xw_test.shape[0], -1)
 
             self.clf.fit(flatrain)
-            raw_y_hat = self.clf.predict(flatest)
-            raw_anomaly_score = self.clf.decision_function(flatest)
+            anomaly_scores = self.clf.decision_function(flatest)
 
-            # The results we get has a shape of
-            result_shape = (
-                (self.X_train.shape[0] - self.window_size) // self.stride
-            ) + 1
-
-            # Mapping the binary output from {-1, 1} to {1, 0}
-            # For consistency with the other solvers
-            self.raw_y_hat = np.array(raw_y_hat)
-            self.raw_y_hat = np.where(self.raw_y_hat == -1, 1, 0)
-
-            # Adding -1 for the non predicted samples
-            # The first window_size samples are not predicted by the model
-            self.raw_y_hat = np.append(
-                np.full(self.X_train.shape[0] -
-                        result_shape, -1), self.raw_y_hat
+            # Anomaly scores
+            self.anomaly_scores = np.array(anomaly_scores)
+            padding = max(self.X_test.shape[0] - len(self.anomaly_scores), 0)
+            self.anomaly_scores = np.append(
+                np.full(padding, np.nan),
+                self.anomaly_scores,
             )
-
-            # Anomaly scores (Not used but allows finer thresholding)
-            self.raw_anomaly_score = np.array(raw_anomaly_score)
-            self.raw_anomaly_score = np.append(
-                np.full(result_shape, -1), self.raw_anomaly_score
+            self.anomaly_predictions = cutoff_scores(
+                self.anomaly_scores,
+                cutoff=self.cutoff,
             )
 
     # Skipping the solver call if a condition is met
@@ -86,5 +77,7 @@ class Solver(BaseSolver):
         # Anomaly : 1
         # Inlier : 0
         # To ignore : -1
-        self.y_hat = self.raw_y_hat
-        return dict(y_hat=self.y_hat)
+        result = dict(anomaly_scores=self.anomaly_scores)
+        if self.anomaly_predictions is not None:
+            result["anomaly_predictions"] = self.anomaly_predictions
+        return result

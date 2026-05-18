@@ -1,9 +1,9 @@
 from benchopt import BaseSolver
 
 import torch
-import numpy as np
 from pyod.models.vae import VAE
 
+from benchmark_utils.predictions import cutoff_scores
 from benchmark_utils.windowing import make_windows
 
 
@@ -11,7 +11,7 @@ class Solver(BaseSolver):
     name = "VAE"
 
     install_cmd = "conda"
-    requirements = ["pip::pyod", "pip::torch"]
+    requirements = ["pyod", "pytorch"]
 
     sampling_strategy = "run_once"
 
@@ -26,12 +26,11 @@ class Solver(BaseSolver):
         "latent_dim": [2, 5, 10],
         "batch_norm": [True],
         "dropout_rate": [0.1, 0.2, 0.5],
+        "cutoff": [None],
     }
     test_config = {
-        'solver': {
-            "n_epochs": 1,
-            "window_size": 16,
-        }
+        "n_epochs": 1,
+        "window_size": 16,
     }
 
     def set_objective(self, X_train, X_test):
@@ -70,7 +69,14 @@ class Solver(BaseSolver):
 
     def run(self, _):
         self.clf.fit(self.Xw_train)
-        self.y_pred = self.clf.predict(self.Xw_test)
+        self.anomaly_scores = self.clf.decision_function(self.Xw_test)
+        self.anomaly_predictions = cutoff_scores(
+            self.anomaly_scores,
+            cutoff=self.cutoff,
+        )
 
     def get_result(self):
-        return dict(y_hat=self.y_pred)
+        result = dict(anomaly_scores=self.anomaly_scores)
+        if self.anomaly_predictions is not None:
+            result["anomaly_predictions"] = self.anomaly_predictions
+        return result

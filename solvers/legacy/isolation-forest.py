@@ -5,6 +5,8 @@ from benchopt import BaseSolver
 from sklearn.ensemble import IsolationForest
 import numpy as np
 
+from benchmark_utils.predictions import cutoff_scores
+
 
 class Solver(BaseSolver):
     name = "IsolationForest"
@@ -17,6 +19,7 @@ class Solver(BaseSolver):
         "window": [True],
         "window_size": [60, 120, 180],
         "stride": [1],
+        "cutoff": [None],
     }
 
     sampling_strategy = "run_once"
@@ -50,24 +53,14 @@ class Solver(BaseSolver):
                 self.Xw_test.shape[0] * self.Xw_test.shape[1], -1)
 
             self.clf.fit(flatrain)
-            raw_y_hat = self.clf.predict(flatest)
-            raw_anomaly_score = self.clf.decision_function(flatest)
+            anomaly_scores = -self.clf.decision_function(flatest)
 
             # The results we get has a shape of
             n_recordings, n_features, n_windows, _ = self.Xw_test.shape
 
-            # Mapping the binary output from {-1, 1} to {1, 0}
-            # For consistency with the other solvers
-            self.raw_y_hat = np.array(raw_y_hat)
-            self.raw_y_hat = np.where(self.raw_y_hat == -1, 1, 0)
-
-            # Reshape back to original structure
-            self.raw_y_hat = self.raw_y_hat.reshape(
-                n_recordings, n_features, n_windows)
-
-            # Anomaly scores (Not used but allows finer thresholding)
-            self.raw_anomaly_score = np.array(raw_anomaly_score)
-            self.raw_anomaly_score = self.raw_anomaly_score.reshape(
+            # Anomaly scores
+            self.anomaly_scores = np.array(anomaly_scores)
+            self.anomaly_scores = self.anomaly_scores.reshape(
                 n_recordings, n_features, n_windows)
         else:
             # No windowing case
@@ -77,14 +70,17 @@ class Solver(BaseSolver):
             X_test_flat = self.X_test.reshape(-1, n_features)
 
             self.clf.fit(X_train_flat)
-            self.raw_y_hat = self.clf.predict(X_test_flat)
-            self.raw_anomaly_score = self.clf.decision_function(X_test_flat)
+            self.anomaly_scores = -self.clf.decision_function(X_test_flat)
 
             # Reshape to (n_recordings, n_samples) for single feature case
             # We assume we take the first feature or average across features
-            self.raw_y_hat = self.raw_y_hat.reshape(n_recordings, n_samples)
-            self.raw_anomaly_score = self.raw_anomaly_score.reshape(
+            self.anomaly_scores = self.anomaly_scores.reshape(
                 n_recordings, n_samples)
+
+        self.anomaly_predictions = cutoff_scores(
+            self.anomaly_scores,
+            cutoff=self.cutoff,
+        )
 
     def skip(self, X_train, X_test):
         # Skip if dataset size is smaller than window size
@@ -98,7 +94,13 @@ class Solver(BaseSolver):
         # Inlier : 0
         # To ignore : -1
         # For now, take the first recording
-        self.y_hat = self.raw_y_hat[0] if (
-            self.raw_y_hat.ndim > 1
-        ) else self.raw_y_hat
-        return dict(y_hat=self.y_hat)
+        anomaly_scores = self.anomaly_scores[0] if (
+            self.anomaly_scores.ndim > 1
+        ) else self.anomaly_scores
+        result = dict(anomaly_scores=anomaly_scores)
+        if self.anomaly_predictions is not None:
+            anomaly_predictions = self.anomaly_predictions[0] if (
+                self.anomaly_predictions.ndim > 1
+            ) else self.anomaly_predictions
+            result["anomaly_predictions"] = anomaly_predictions
+        return result

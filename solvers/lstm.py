@@ -10,13 +10,14 @@ from tqdm import tqdm
 from benchmark_utils.models import AutoEncoderLSTM
 from benchmark_utils.windowing import make_windowed_dataset
 from benchmark_utils.windowing import reconstruct_from_windows
+from benchmark_utils.predictions import cutoff_scores
 
 
 class Solver(BaseSolver):
     name = "LSTM"
 
     install_cmd = "conda"
-    requirements = ["pip::torch", "tqdm"]
+    requirements = ["pytorch", "tqdm"]
 
     sampling_strategy = "run_once"
 
@@ -27,18 +28,16 @@ class Solver(BaseSolver):
         "lr": [1e-5],
         "window_size": [256],  # window_size = seq_len
         "stride": [1],
-        "percentile": [97],
+        "cutoff": [None],
         "encoder_layers": [32],
         "decoder_layers": [32],
     }
 
     test_config = {
-        'solver': {
-            "embedding_dim": 2,
-            "batch_size": 1,
-            "n_epochs": 1,
-            "window_size": 16,
-        }
+        "embedding_dim": 2,
+        "batch_size": 1,
+        "n_epochs": 1,
+        "window_size": 16,
     }
 
     def set_objective(self, X_train, X_test):
@@ -105,9 +104,6 @@ class Solver(BaseSolver):
 
             ti.set_postfix(train_loss=f"{train_loss:.5f}")
 
-        # Saving the model
-        torch.save(self.model.state_dict(), "model.pth")
-
         # Test loop
         self.model.eval()
         raw_reconstruction = []
@@ -119,17 +115,18 @@ class Solver(BaseSolver):
             raw_reconstruction.append(x_hat.detach().cpu().numpy())
         reconstructed_data = np.concatenate(raw_reconstruction, axis=0)
         reconstructed_data = reconstruct_from_windows(
-                reconstructed_data, stride=self.stride,
-                batch=len(self.X_test), n_features=self.n_features
+            reconstructed_data, stride=self.stride,
+            batch=len(self.X_test), n_features=self.n_features
         )
 
         reconstruction_err = np.mean(
             np.abs(self.X_test - reconstructed_data), axis=1
         )
+        self.anomaly_scores = reconstruction_err
 
-        self.y_hat = np.where(
-            reconstruction_err > np.percentile(
-                reconstruction_err, self.percentile), 1, 0
+        self.anomaly_predictions = cutoff_scores(
+            self.anomaly_scores,
+            cutoff=self.cutoff,
         )
 
     def skip(self, X_train, X_test):
@@ -138,4 +135,7 @@ class Solver(BaseSolver):
         return False, None
 
     def get_result(self):
-        return dict(y_hat=self.y_hat)
+        result = dict(anomaly_scores=self.anomaly_scores)
+        if self.anomaly_predictions is not None:
+            result["anomaly_predictions"] = self.anomaly_predictions
+        return result

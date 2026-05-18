@@ -5,6 +5,8 @@ import numpy as np
 from TSB_AD.models.Chronos import Chronos
 from TSB_AD.utils.slidingWindows import find_length
 
+from benchmark_utils.predictions import cutoff_scores
+
 
 class Solver(BaseSolver):
     name = "TSB-Chronos"
@@ -17,6 +19,7 @@ class Solver(BaseSolver):
         "prediction_length": [1],
         "model_size": ['base'],
         "batch_size": [32],
+        "cutoff": [None],
     }
 
     sampling_strategy = "run_once"
@@ -39,16 +42,18 @@ class Solver(BaseSolver):
         )
 
     def run(self, _):
-        print("Running Chronos solver...")
         self.clf.fit(self.data)
-        self.score = self.clf.decision_scores_[-len(self.X_test):]
-        print("Chronos Fitted")
+        self.anomaly_scores = self.clf.decision_scores_[-len(self.X_test):]
+        self.anomaly_predictions = cutoff_scores(
+            self.anomaly_scores,
+            cutoff=self.cutoff,
+        )
 
-        # Map scores to predictions
-        threshold = np.percentile(self.score, (1 - 0.1) * 100)
-        self.y_hat = (self.score > threshold).astype(int)
         del self.clf  # Free memory for the model
         torch.cuda.empty_cache()  # Release cached GPU memory
 
     def get_result(self):
-        return dict(y_hat=self.y_hat, raw_anomaly_score=self.score)
+        result = dict(anomaly_scores=self.anomaly_scores)
+        if self.anomaly_predictions is not None:
+            result["anomaly_predictions"] = self.anomaly_predictions
+        return result
