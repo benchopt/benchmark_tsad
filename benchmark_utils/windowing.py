@@ -3,6 +3,49 @@ import torch
 from torch.utils.data import TensorDataset
 
 
+def find_period_length(data, default=125):
+    """Estimate a reasonable period length from autocorrelation.
+
+    This local helper replaces the small ``TSB_AD`` utility previously used by
+    several solvers, avoiding a heavy optional dependency for solvers that only
+    need automatic window sizing.
+    """
+    data = np.asarray(data)
+    if data.ndim > 1:
+        return 0
+
+    data = data[: min(20_000, len(data))]
+    if len(data) < 6:
+        return 0
+
+    centered = data - data.mean()
+    norm = np.dot(centered, centered)
+    if norm == 0:
+        return default
+
+    max_lag = min(400, len(centered) - 1)
+    autocorr = np.correlate(centered, centered, mode="full")
+    autocorr = autocorr[len(centered) - 1: len(centered) + max_lag] / norm
+
+    base = 3
+    values = autocorr[base:]
+    if len(values) < 3:
+        return default
+
+    local_max = (
+        np.where((values[1:-1] > values[:-2]) &
+                 (values[1:-1] > values[2:]))[0] + 1
+    )
+
+    if len(local_max) == 0:
+        return default
+
+    lag = local_max[np.argmax(values[local_max])] + base
+    if lag < 3 or lag > 300:
+        return default
+    return int(lag)
+
+
 def make_windows(X, window_size=32, stride=1, padding=False):
     """Create a windowed view of the data.
 
@@ -82,7 +125,7 @@ def reconstruct_from_windows(windows, stride, batch, n_features):
     Parameters
     ----------
     windows : np.ndarray
-        The overlapping windows of shape (batch*n_windows, window_size, n_features)
+        The overlapping windows of shape (batch*n_windows, window_size, n_feat)
     stride : int
         The stride used to create the windows
     batch : int
