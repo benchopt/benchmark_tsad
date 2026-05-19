@@ -26,7 +26,7 @@ class Objective(BaseObjective):
     name = "Anomaly detection"
 
     install_cmd = "conda"
-    requirements = ["scikit-learn", "pip:pooch"]
+    requirements = ["scikit-learn"]
 
     parameters = {
         "score_metrics": [("auc_pr", "auc_roc")],

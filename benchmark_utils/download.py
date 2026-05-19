@@ -48,6 +48,12 @@ def fetch_tsb_uad(name: str) -> Path:
 
     import pooch  # local import: only required when downloading
 
+    try:
+        import tqdm  # noqa: F401
+        progressbar = True
+    except ImportError:
+        progressbar = False
+
     cache_root = Path(config.get_data_path(key=_BUNDLE_ROOT))
     cache_root.mkdir(parents=True, exist_ok=True)
 
@@ -60,7 +66,7 @@ def fetch_tsb_uad(name: str) -> Path:
     registry.fetch(
         _BUNDLE_FILENAME,
         processor=pooch.Unzip(extract_dir="."),
-        progressbar=True,
+        progressbar=progressbar,
     )
 
     subdir = cache_root / _BUNDLE_ROOT / _SUBDIR[name]

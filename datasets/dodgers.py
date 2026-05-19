@@ -90,6 +90,8 @@ def load_data(db_path, record_ids=None, verbose=False):
 class Dataset(BaseDataset):
     name = "DODGERS"
 
+    requirements = ["pip:pooch"]
+
     parameters = {
         # "recordings_id": [["101"]],
         "recordings_id": [None],
