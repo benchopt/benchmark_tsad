@@ -294,7 +294,7 @@ class Autoencoder(nn.Module):
 
         return losses
 
-    def predict(self, X_test, X_dirty=None, device="cuda"):
+    def predict(self, X_test, X_dirty=None, device=None):
         """
         Predict anomaly scores for time series data.
 
@@ -306,6 +306,10 @@ class Autoencoder(nn.Module):
         Returns:
             Reconstructed data and sets decision_scores_ attribute
         """
+        if device is None:
+            device = torch.device(
+                "cuda" if torch.cuda.is_available() else "cpu")
+
         self.eval()
         self.to(device)
 
@@ -349,7 +353,7 @@ class Autoencoder(nn.Module):
 
         return test_predict
 
-    def encode_data(self, x, device="cuda"):
+    def encode_data(self, x, device=None):
         """
         Encode input data to latent representation.
 
@@ -360,6 +364,10 @@ class Autoencoder(nn.Module):
         Returns:
             Encoded data as numpy array
         """
+        if device is None:
+            device = torch.device(
+                "cuda" if torch.cuda.is_available() else "cpu")
+
         self.eval()
         self.to(device)
 
