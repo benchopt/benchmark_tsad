@@ -102,8 +102,6 @@ def load_mitdb_data(db_path, record_ids=None, verbose=False):
 class Dataset(BaseDataset):
     name = "MITDB"
 
-    requirements = ["pooch"]
-
     parameters = {
         "recordings_id": [["100", "201", "109", "105", "111", "221"]],
         "debug": [False],

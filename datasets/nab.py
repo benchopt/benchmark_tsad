@@ -88,8 +88,6 @@ def load_data(db_path, record_ids=None, verbose=False):
 class Dataset(BaseDataset):
     name = "NAB"
 
-    requirements = ["pooch"]
-
     parameters = {
         "recordings_id": [["art0"], ["art1"], ["CloudWatch"]],
         "debug": [False],
