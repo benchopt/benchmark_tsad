@@ -59,6 +59,6 @@ def check_test_dataset_get_data(benchmark, dataset_class):
         "daphnet", "ecg", "genesis", "ghl",
         "iops", "kdd21", "mgab",
         "occupancy", "opportunity", "sensorscope", "smd",
-        "svdb", "yahoo"
+        "svdb", "yahoo", "nab", "mitdb", "dodgers",
     ]:
         pytest.xfail(f"{dataset_class.name} dataset is not downloaded.")
