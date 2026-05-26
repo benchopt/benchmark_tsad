@@ -94,7 +94,7 @@ def load_data(db_path, record_ids=None):
 class Dataset(BaseDataset):
     name = "SMD"
 
-    requirements = ["pip:pooch"]
+    requirements = ["pip::pooch"]
 
     parameters = {
         "recordings_id": [["1", "2"]],
@@ -122,7 +122,7 @@ class Dataset(BaseDataset):
 
         # Reshaping data to (n_recordings, n_features, n_samples)
         # For SMD, treat as single recording
-        n_features = X_train.shape[1]
+        n_features = X_train.shape[0]
         X_train = X_train.T.reshape(1, n_features, -1)
         X_test = X_test.T.reshape(1, n_features, -1)
         y_test = y_test.reshape(1, -1)

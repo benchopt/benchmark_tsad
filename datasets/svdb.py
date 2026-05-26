@@ -102,7 +102,7 @@ def load_data(db_path, record_ids=None, verbose=False, number=-1):
 class Dataset(BaseDataset):
     name = "SVDB"
 
-    requirements = ["pip:pooch"]
+    requirements = ["pip::pooch"]
 
     parameters = {
         "recordings_id": [["801"]],
@@ -136,17 +136,6 @@ class Dataset(BaseDataset):
         X_train = X_train.reshape(n_recordings, 1, -1)
         X_test = X_test.reshape(n_recordings, 1, -1)
         y_test = y_test.reshape(n_recordings, -1)
-
-        plt.figure(figsize=(6, 3))
-        plt.plot(X_train[0, 0, :500], linewidth=1.2)
-        plt.plot(range(350, 360),
-                 X_train[0, 0, 350:360], color="orange", linewidth=3)
-        plt.title("SVDB dataset")
-        plt.tight_layout()
-        plt.savefig("svdb_example.png")
-        plt.close()
-
-        print("PLOT SAVED")
 
         return dict(
             X_train=X_train,

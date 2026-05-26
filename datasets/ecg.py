@@ -95,16 +95,19 @@ def load_data(db_path, record_ids=None, verbose=False, number=-1):
 class Dataset(BaseDataset):
     name = "ECG"
 
-    requirements = ["pip:pooch"]
+    requirements = ["pip::pooch"]
 
     parameters = {
-        "recordings_id": [["1", "2"]],
+        "recordings_id": [
+            ["MBA_ECG14046_data_1", "MBA_ECG14046_data_2"],
+            "all",
+        ],
         "debug": [False],
         "number": [-1],
     }
 
     def get_data(self):
-        """Load the MITDB dataset."""
+        """Load the ECG dataset."""
         path = fetch_tsb_uad("ECG")
 
         # X shape (n_recordings, n_samples)

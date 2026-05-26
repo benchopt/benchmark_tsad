@@ -104,7 +104,7 @@ def load_data(db_path, record_ids=None, verbose=False, number=-1):
 class Dataset(BaseDataset):
     name = "DAPHNET"
 
-    requirements = ["pip:pooch"]
+    requirements = ["pip::pooch"]
 
     parameters = {
         # "recordings_id": [["S01R02E0"]],

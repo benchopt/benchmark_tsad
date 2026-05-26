@@ -109,7 +109,7 @@ def load_data(db_path, verbose=False):
 class Dataset(BaseDataset):
     name = "IOPS"
 
-    requirements = ["pip:pooch"]
+    requirements = ["pip::pooch"]
 
     parameters = {
         "debug": [False],

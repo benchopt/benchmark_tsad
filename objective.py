@@ -121,8 +121,6 @@ class Objective(BaseObjective):
                 )
             )
 
-        # Setting value to 0. The actual value is not used for ranking.
-        result["value"] = 0.0
         return result
 
     def get_objective(self):
