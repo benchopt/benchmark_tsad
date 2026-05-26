@@ -1,0 +1,5 @@
+short_labels: true
+plots:
+  - per_dataset_delta
+  - head_to_head
+  - table
