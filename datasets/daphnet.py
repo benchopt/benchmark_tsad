@@ -3,7 +3,6 @@ from benchopt import BaseDataset
 from pathlib import Path
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
 from benchmark_utils.download import fetch_tsb_uad
 
@@ -143,17 +142,6 @@ class Dataset(BaseDataset):
         X_train = X_train.reshape(n_recordings, 1, -1)
         X_test = X_test.reshape(n_recordings, 1, -1)
         y_test = y_test.reshape(n_recordings, -1)
-
-        plt.figure(figsize=(6, 3))
-        plt.plot(X_train[0, 0, :500], linewidth=1.2)
-        plt.plot(range(297, 305),
-                 X_train[0, 0, 297:305], color="orange", linewidth=3)
-        plt.title("Daphnet dataset")
-        plt.tight_layout()
-        plt.savefig("daphnet_example.png")
-        plt.close()
-
-        print("PLOT SAVED")
 
         return dict(
             X_train=X_train,
