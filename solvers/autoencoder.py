@@ -29,8 +29,6 @@ class Solver(BaseSolver):
         "batch_size": 8,
     }
 
-    sampling_strategy = "run_once"
-
     def set_objective(self, X_train, X_test):
         if self.window_size == "auto":
             self.window_size = find_period_length(X_train.reshape(-1))

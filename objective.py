@@ -27,6 +27,8 @@ class Objective(BaseObjective):
 
     install_cmd = "conda"
     requirements = ["scikit-learn"]
+    # Do not track multiple results per config
+    sampling_strategy = "run_once"
 
     parameters = {
         "score_metrics": [("auc_pr", "auc_roc")],
@@ -121,8 +123,6 @@ class Objective(BaseObjective):
                 )
             )
 
-        # Setting value to 0. The actual value is not used for ranking.
-        result["value"] = 0.0
         return result
 
     def get_objective(self):

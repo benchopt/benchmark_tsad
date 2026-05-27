@@ -1,0 +1,4 @@
+plots:
+  - per_dataset_delta
+  - head_to_head
+  - table

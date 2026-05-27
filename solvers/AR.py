@@ -17,8 +17,6 @@ class Solver(BaseSolver):
     install_cmd = "conda"
     requirements = ["pytorch", "tqdm"]
 
-    sampling_strategy = "run_once"
-
     parameters = {
         "batch_size": [128],
         "n_epochs": [50],

@@ -55,6 +55,9 @@ class Dataset(BaseDataset):
 
         y_test = pd.read_csv(path / "PSM_test_label.csv").to_numpy()[:, 1]
 
+        # Make sure the data has shape (n_samples, n_features, n_times)
+        X_train, X_test = X_train[:, None], X_test[:, None]
+
         # Limiting the size of the dataset for testing purposes
         if self.debug:
             X_train = X_train[:1000]

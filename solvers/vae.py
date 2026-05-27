@@ -13,8 +13,6 @@ class Solver(BaseSolver):
     install_cmd = "conda"
     requirements = ["pyod", "pytorch"]
 
-    sampling_strategy = "run_once"
-
     parameters = {
         "contamination": [0.005, 0.05, 0.1, 0.2],
         "n_epochs": [50],

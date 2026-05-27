@@ -62,18 +62,4 @@ class Dataset(BaseDataset):
         y_test = info_contam["outliers_mask"][self.n_samples:]
         y_test = np.any(y_test, axis=1)
 
-        import matplotlib.pyplot as plt
-        # Plot example time series with trend
-        plt.figure(figsize=(10, 4))
-        plt.plot(X_train[0, 0, :])
-        plt.title('Example Time Series with Added Trend')
-        plt.xlabel('Time')
-        plt.ylabel('Value')
-        plt.legend()
-        plt.show()
-
-        print(f"X_train shape: {X_train.shape}")
-        print(f"X_test shape: {X_test.shape}")
-        print(f"y_test shape: {y_test.shape}")
-
         return dict(X_train=X_train, y_test=y_test, X_test=X_test)

@@ -31,8 +31,6 @@ class Solver(BaseSolver):
         "batch_size": 16,
     }
 
-    sampling_strategy = "run_once"
-
     def set_objective(self, X_train, X_test):
         _, n_features, _ = X_train.shape
         self.X_train = X_train.reshape(-1, n_features)

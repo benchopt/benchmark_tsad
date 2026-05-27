@@ -20,8 +20,6 @@ class Solver(BaseSolver):
     install_cmd = "conda"
     requirements = ["pytorch", "tqdm"]
 
-    sampling_strategy = "run_once"
-
     parameters = {
         "num_layers": [1],
         "num_heads": [2],

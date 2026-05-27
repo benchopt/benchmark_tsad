@@ -92,10 +92,8 @@ def check_data(data_path, dataset, data_type):
             }
             raise ImportError(
                 f"{data_type.capitalize()} data not found for {dataset}. "
-                "Please download the data "
-                "from the official repository "
-                f"{official_repo[dataset]}"
-                f"and place it in {data_path}"
+                "Please download the data from the official repository "
+                f"{official_repo[dataset]} and place it in {data_path}"
             )
 
     return required_files[0]

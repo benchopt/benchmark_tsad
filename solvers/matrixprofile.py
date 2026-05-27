@@ -24,8 +24,6 @@ class Solver(BaseSolver):
         "window_size": 8,
     }
 
-    sampling_strategy = "run_once"
-
     def set_objective(self, X_train, X_test):
         # Shapes received: (n_recordings, n_features, n_samples)
         self.X_train = X_train
