@@ -17,7 +17,6 @@ sys.path.append(str(Path(__file__).parent.parent / 'AnomalyBERT'))
 
 class Solver(BaseSolver):
     name = "AnomalyBERT"
-    sampling_strategy = "run_once"
 
     requirements = ["pip::timm", "pytorch", "numpy", "tqdm"]
 
@@ -34,8 +33,6 @@ class Solver(BaseSolver):
         "window_sliding": [16],
         "cutoff": [None],
     }
-
-    sampling_strategy = "run_once"
 
     def set_objective(self, X_train, X_test):
         # X_train shape: (n_series, n_features, n_samples)

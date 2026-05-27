@@ -39,8 +39,6 @@ class Solver(BaseSolver):
         "cutoff": [None],
     }
 
-    sampling_strategy = "run_once"
-
     def set_objective(self, X_train, X_test):
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu")

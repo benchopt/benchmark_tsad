@@ -20,8 +20,6 @@ class Solver(BaseSolver):
         "cutoff": [None],
     }
 
-    sampling_strategy = "run_once"
-
     def set_objective(self, X_train, X_test):
         _, n_features, _ = X_train.shape
         self.data = np.append(X_train, X_test, axis=2)

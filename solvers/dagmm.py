@@ -26,8 +26,6 @@ class Solver(BaseSolver):
         # "device": ["cuda:3"]
     }
 
-    sampling_strategy = "run_once"
-
     def set_objective(self, X_train, X_test):
         n_features = X_train.shape[1]
         self.X_train = X_train.transpose(0, 2, 1).reshape(-1, n_features)

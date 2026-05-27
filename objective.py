@@ -27,6 +27,8 @@ class Objective(BaseObjective):
 
     install_cmd = "conda"
     requirements = ["scikit-learn"]
+    # Do not track multiple results per config
+    sampling_strategy = "run_once"
 
     parameters = {
         "score_metrics": [("auc_pr", "auc_roc")],
